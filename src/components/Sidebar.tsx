@@ -17,11 +17,14 @@ export default function Sidebar() {
   return (
     <aside className="hidden md:flex w-64 bg-slate-50 border-r border-slate-200 flex-col py-8 px-4 justify-between shrink-0">
       <div>
-        <div className="flex items-center gap-3 px-4 mb-12">
+        <div className="flex items-center gap-3 px-4 mb-4">
            <div className="w-10 h-10 bg-white shadow-sm border border-slate-200 rounded-xl flex items-center justify-center">
              <span className="text-xl">🌿</span>
            </div>
            <span className="text-xl font-extrabold text-slate-900 tracking-tight">MediKiosk</span>
+        </div>
+        <div className="px-4 mb-10">
+          <img src="/ayush-logo.jpg" alt="Ministry of Ayush" className="w-full object-contain rounded-lg shadow-sm border border-slate-100 bg-white p-1" />
         </div>
         
         <nav className="space-y-2">
