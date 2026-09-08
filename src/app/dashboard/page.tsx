@@ -292,8 +292,13 @@ export default function UserDashboard() {
                   </span>
                 )}
               </div>
-              <button onClick={() => router.push("/ayush-assessment")} className="hidden md:flex items-center mt-2 cursor-pointer hover:scale-105 transition-transform">
-                <img src="/ayush-logo.jpg" alt="Ministry of Ayush" className="h-12 object-contain" />
+              <button 
+                onClick={() => router.push("/ayush-assessment")} 
+                className="hidden md:flex items-center justify-between mt-2 w-24 h-9 bg-emerald-500 rounded-full p-1 cursor-pointer hover:bg-emerald-600 transition-colors shadow-inner"
+                title="AYUSH Assessment"
+              >
+                <span className="text-xs font-bold text-white ml-2 tracking-wide">AYUSH</span>
+                <div className="w-7 h-7 bg-white rounded-full shadow-sm" />
               </button>
             </div>
           </header>
