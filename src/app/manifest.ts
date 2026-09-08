@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'MediKiosk',
     short_name: 'MediKiosk',
     description: 'AI-Powered Triage and OPD Optimization System',
-    start_url: '/login',
+    start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',
     theme_color: '#0f4b3e',
