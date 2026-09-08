@@ -36,6 +36,15 @@ export default function ConsultPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
 
   // Use the internal Next.js API route to avoid CORS and securely handle keys
   const callGroqAPI = async (chatMessages: {role: 'ai' | 'user', text: string}[]): Promise<string> => {
@@ -220,28 +229,14 @@ Your goals:
                 </div>
               </div>
             )}
+            )}
+            <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area (Sticky Bottom) */}
-          <div className="absolute bottom-0 left-0 right-0 bg-white p-4 md:p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] border-t border-slate-100 z-20">
-            {/* Voice Button floating above */}
-            <div className="absolute left-1/2 -top-10 md:-top-12 -translate-x-1/2">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={toggleRecording}
-                className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-xl transition-colors border-4 ${
-                  isRecording 
-                    ? 'bg-red-500 border-red-200 animate-pulse shadow-red-200' 
-                    : 'bg-blue-600 border-white hover:bg-blue-700 shadow-blue-200'
-                }`}
-              >
-                <Mic className="w-8 h-8 md:w-10 md:h-10 text-white" />
-              </motion.button>
-            </div>
-            
+          {/* Input Area (Sticky Bottom via Flex) */}
+          <div className="bg-white p-4 md:p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] border-t border-slate-100 z-20 shrink-0">
             {/* Text Input Row */}
-            <div className="flex gap-2 md:gap-4 items-center mt-6 md:mt-8">
+            <div className="flex gap-2 md:gap-4 items-center">
               <input 
                 type="text"
                 value={inputText}
@@ -250,6 +245,18 @@ Your goals:
                 placeholder={isRecording ? "Listening..." : "Type your symptoms..."}
                 className="flex-1 p-3 md:p-4 text-base md:text-lg bg-slate-50 border-2 border-slate-200 rounded-xl md:rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all"
               />
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={toggleRecording}
+                className={`h-full py-3 md:py-4 px-4 md:px-6 rounded-xl md:rounded-2xl flex items-center justify-center transition-colors border-2 ${
+                  isRecording 
+                    ? 'bg-red-50 border-red-500 text-red-500 animate-pulse' 
+                    : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-600'
+                }`}
+              >
+                <Mic className="w-5 h-5 md:w-6 md:h-6" />
+              </motion.button>
               <Button size="default" onClick={handleSend} disabled={!inputText.trim() || isLoading} className="h-full py-3 md:py-4 px-4 md:px-8 rounded-xl md:rounded-2xl">
                 <Send className="w-5 h-5 md:w-6 md:h-6" />
               </Button>
