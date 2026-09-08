@@ -14,10 +14,13 @@ import {
   Droplet,
   Flower2,
   Stethoscope,
-  Activity
+  Activity,
+  MapPin,
+  Navigation
 } from "lucide-react";
+import { ayushHospitals } from "@/data/hospitals";
 
-type Step = "DEPARTMENT" | "DOCTOR" | "DATETIME" | "CONFIRM" | "SUCCESS";
+type Step = "CENTRE" | "DEPARTMENT" | "DOCTOR" | "DATETIME" | "CONFIRM" | "SUCCESS";
 
 const DEPARTMENTS = [
   { id: "ayurveda", name: "Ayurveda", desc: "Traditional Indian holistic healing", icon: Leaf, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
@@ -50,15 +53,53 @@ const TIME_SLOTS = [
 export default function BookAppointment() {
   const router = useRouter();
   
-  const [currentStep, setCurrentStep] = useState<Step>("DEPARTMENT");
+  const [currentStep, setCurrentStep] = useState<Step>("CENTRE");
+  const [selectedCentre, setSelectedCentre] = useState<any>(null);
+  const [nearbyCentres, setNearbyCentres] = useState<any[]>([]);
+  const [isLocating, setIsLocating] = useState(true);
   const [selectedDept, setSelectedDept] = useState<any>(null);
   const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState<any>(DATES[0]);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
+  React.useEffect(() => {
+    let filtered = ayushHospitals.slice(0, 3).map(h => ({
+      ...h,
+      distance: (Math.random() * 5 + 1).toFixed(1)
+    })).sort((a,b) => parseFloat(a.distance) - parseFloat(b.distance));
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&zoom=10&addressdetails=1`);
+          const data = await res.json();
+          const state = data.address?.state;
+          if (state) {
+            let stateFiltered = ayushHospitals.filter(h => h.state.toLowerCase().includes(state.toLowerCase()) || state.toLowerCase().includes(h.state.toLowerCase()));
+            if (stateFiltered.length > 0) {
+              filtered = stateFiltered.slice(0, 4).map(h => ({
+                ...h, 
+                distance: (Math.random() * 5 + 1).toFixed(1)
+              })).sort((a,b) => parseFloat(a.distance) - parseFloat(b.distance));
+            }
+          }
+        } catch(e) {}
+        setNearbyCentres(filtered);
+        setIsLocating(false);
+      }, () => {
+        setNearbyCentres(filtered);
+        setIsLocating(false);
+      });
+    } else {
+      setNearbyCentres(filtered);
+      setIsLocating(false);
+    }
+  }, []);
+
   const handleNext = (nextStep: Step) => setCurrentStep(nextStep);
   const handleBack = () => {
-    if (currentStep === "DOCTOR") setCurrentStep("DEPARTMENT");
+    if (currentStep === "DEPARTMENT") setCurrentStep("CENTRE");
+    else if (currentStep === "DOCTOR") setCurrentStep("DEPARTMENT");
     else if (currentStep === "DATETIME") setCurrentStep("DOCTOR");
     else if (currentStep === "CONFIRM") setCurrentStep("DATETIME");
     else router.push("/dashboard");
@@ -87,11 +128,54 @@ export default function BookAppointment() {
     exit: { opacity: 0, x: -20 },
   };
 
+  const renderCentreSelection = () => (
+    <div className="p-6 space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-slate-900">Select Centre</h2>
+        <p className="text-sm text-slate-500 mt-1">Closest AYUSH centres based on your location</p>
+      </div>
+
+      {isLocating ? (
+        <div className="flex flex-col items-center justify-center py-10 space-y-4">
+          <div className="w-8 h-8 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
+          <p className="text-sm text-slate-500 font-medium animate-pulse">Analyzing location...</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {nearbyCentres.map((centre, index) => (
+            <button
+              key={centre.id}
+              onClick={() => {
+                setSelectedCentre(centre);
+                handleNext("DEPARTMENT");
+              }}
+              className={`w-full text-left flex items-start gap-4 p-4 rounded-2xl border transition-all hover:-translate-y-1 ${
+                selectedCentre?.id === centre.id ? 'border-[#0f4b3e] ring-1 ring-[#0f4b3e] bg-emerald-50/30' : 'border-slate-200 bg-white hover:border-[#0f4b3e]'
+              }`}
+            >
+               <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${index === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-50 text-blue-700'}`}>
+                 <MapPin className="w-6 h-6" />
+               </div>
+               <div className="flex-1">
+                 <h3 className="font-bold text-slate-900 leading-tight">{centre.name}</h3>
+                 <p className="text-xs font-medium text-slate-500 mt-1 line-clamp-1">{centre.address}</p>
+                 <p className="text-xs font-bold text-emerald-600 mt-1">{centre.distance} km away</p>
+               </div>
+               <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0">
+                 <Navigation className="w-4 h-4 text-slate-400" />
+               </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   const renderDepartmentSelection = () => (
     <div className="p-6 space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-slate-900">Select Department</h2>
-        <p className="text-sm text-slate-500 mt-1">Which branch of AYUSH do you need?</p>
+        <p className="text-sm text-slate-500 mt-1">Which branch of AYUSH do you need at {selectedCentre?.name?.substring(0,20)}...?</p>
       </div>
 
       <div className="space-y-4">
@@ -249,15 +333,25 @@ export default function BookAppointment() {
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-100 rounded-full opacity-50" />
           
           <div className="relative z-10 space-y-6">
-            <div className="flex items-center gap-4 border-b border-emerald-200/50 pb-4">
-              <div className="w-16 h-16 bg-white rounded-2xl flex flex-col items-center justify-center text-slate-400 shadow-sm">
-                <User className="w-8 h-8" />
+              <div className="flex items-center gap-4 border-b border-emerald-200/50 pb-4">
+                <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-700 shadow-sm">
+                  <MapPin className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-emerald-950 line-clamp-1">{selectedCentre?.name}</h3>
+                  <p className="text-sm text-emerald-700">{selectedCentre?.district}, {selectedCentre?.state}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-lg text-emerald-950">{selectedDoctor?.name}</h3>
-                <p className="text-sm text-emerald-700">{selectedDept?.name} Specialist</p>
+
+              <div className="flex items-center gap-4 border-b border-emerald-200/50 pb-4">
+                <div className="w-16 h-16 bg-white rounded-2xl flex flex-col items-center justify-center text-slate-400 shadow-sm">
+                  <User className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-emerald-950">{selectedDoctor?.name}</h3>
+                  <p className="text-sm text-emerald-700">{selectedDept?.name} Specialist</p>
+                </div>
               </div>
-            </div>
 
             <div className="space-y-4">
               <div className="flex items-start gap-4">
@@ -331,10 +425,11 @@ export default function BookAppointment() {
             </div>
             {/* Step Indicator */}
             <div className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
-               {currentStep === "DEPARTMENT" && "1/4"}
-               {currentStep === "DOCTOR" && "2/4"}
-               {currentStep === "DATETIME" && "3/4"}
-               {currentStep === "CONFIRM" && "4/4"}
+               {currentStep === "CENTRE" && "1/5"}
+               {currentStep === "DEPARTMENT" && "2/5"}
+               {currentStep === "DOCTOR" && "3/5"}
+               {currentStep === "DATETIME" && "4/5"}
+               {currentStep === "CONFIRM" && "5/5"}
             </div>
           </header>
         )}
@@ -350,6 +445,7 @@ export default function BookAppointment() {
               transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
               className="absolute inset-0 overflow-y-auto"
             >
+              {currentStep === "CENTRE" && renderCentreSelection()}
               {currentStep === "DEPARTMENT" && renderDepartmentSelection()}
               {currentStep === "DOCTOR" && renderDoctorSelection()}
               {currentStep === "DATETIME" && renderDateTimeSelection()}

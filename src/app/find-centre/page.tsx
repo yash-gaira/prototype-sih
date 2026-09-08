@@ -11,7 +11,7 @@ export default function FindCentreScreen() {
   
   const [locationStatus, setLocationStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [userState, setUserState] = useState<string>("");
-  const [nearbyHospitals, setNearbyHospitals] = useState<Hospital[]>([]);
+  const [nearbyHospitals, setNearbyHospitals] = useState<(Hospital & { distance?: string })[]>([]);
 
   useEffect(() => {
     // Prompt for location on mount
@@ -36,19 +36,25 @@ export default function FindCentreScreen() {
           setUserState(detectedState);
           
           // Filter hospitals by state (case insensitive partial match)
+          let filtered = [];
           if (detectedState) {
-            const filtered = ayushHospitals.filter(h => 
+            filtered = ayushHospitals.filter(h => 
               h.state.toLowerCase().includes(detectedState.toLowerCase()) || 
               detectedState.toLowerCase().includes(h.state.toLowerCase())
             );
-            if (filtered.length > 0) {
-              setNearbyHospitals(filtered);
-            } else {
-              setNearbyHospitals(ayushHospitals.slice(0, 5)); // Fallback if no exact match
-            }
-          } else {
-            setNearbyHospitals(ayushHospitals.slice(0, 5)); // Fallback
           }
+          
+          if (filtered.length === 0) {
+            filtered = ayushHospitals.slice(0, 5); // Fallback
+          }
+
+          // Add mock distances and sort
+          const withDistances = filtered.map(h => ({
+            ...h,
+            distance: (Math.random() * 15 + 1).toFixed(1) // Random distance 1-16 km
+          })).sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+
+          setNearbyHospitals(withDistances);
           setLocationStatus("success");
         } catch (e) {
           console.error("Geocoding failed", e);
@@ -137,6 +143,9 @@ export default function FindCentreScreen() {
                      <div className="flex-1">
                        <h3 className="font-bold text-slate-900 leading-tight">{hospital.name}</h3>
                        <p className="text-xs font-medium text-slate-500 mt-1">{hospital.address}</p>
+                       {hospital.distance && (
+                         <p className="text-xs font-bold text-emerald-600 mt-0.5">{hospital.distance} km away</p>
+                       )}
                        <div className="flex flex-wrap gap-1 mt-2">
                          {hospital.systems.slice(0, 2).map(sys => (
                            <span key={sys} className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-md">

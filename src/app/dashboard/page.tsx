@@ -53,6 +53,21 @@ export default function UserDashboard() {
       } catch (e) {}
     }
 
+    // Request Location
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          localStorage.setItem("medikiosk_user_location", JSON.stringify({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          }));
+        },
+        (error) => {
+          console.log("Location access denied or error:", error);
+        }
+      );
+    }
+
     const apptRaw = localStorage.getItem("medikiosk_next_appointment");
     if (apptRaw) {
       try {
