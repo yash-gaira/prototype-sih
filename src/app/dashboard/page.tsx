@@ -18,7 +18,8 @@ import {
   ChevronRight,
   ShieldAlert,
   CheckCircle2,
-  X
+  X,
+  LogOut
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { t } from "@/lib/translations";
@@ -126,6 +127,7 @@ export default function UserDashboard() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadState, setUploadState] = useState<"idle" | "uploading" | "success">("idle");
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const colorClasses: Record<string, string> = {
     green: "bg-green-100 text-green-700 border-green-200",
@@ -210,10 +212,42 @@ export default function UserDashboard() {
           
           {/* Header */}
           <header className="px-6 md:px-10 pt-10 pb-4 flex justify-between items-start">
-            <div className="flex gap-4 items-center">
-              <div className="w-14 h-14 md:w-16 md:h-16 bg-slate-200 rounded-full overflow-hidden flex items-center justify-center">
+            <div className="flex gap-4 items-center relative">
+              <button 
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="w-14 h-14 md:w-16 md:h-16 bg-slate-200 rounded-full overflow-hidden flex items-center justify-center hover:bg-slate-300 transition-colors"
+              >
                 <User className="w-8 h-8 md:w-10 md:h-10 text-slate-400" />
-              </div>
+              </button>
+              
+              <AnimatePresence>
+                {showProfileMenu && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute top-[4.5rem] left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden"
+                  >
+                    <div className="p-4 border-b border-slate-100 bg-slate-50">
+                      <p className="text-sm font-bold text-slate-900 truncate">{userName}</p>
+                      <p className="text-xs text-slate-500 truncate mt-0.5">ABHA: {aadhaarNumber}</p>
+                    </div>
+                    <div className="p-2">
+                      <button 
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          router.push('/login');
+                        }} 
+                        className="w-full text-left px-3 py-2.5 text-sm text-rose-600 hover:bg-rose-50 rounded-lg flex items-center gap-3 font-semibold transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <div>
                 <p className="text-sm md:text-base text-slate-500 font-medium">{t(language, 'goodMorning')},</p>
                 <h1 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">{userName}</h1>
