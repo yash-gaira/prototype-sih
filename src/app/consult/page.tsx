@@ -23,6 +23,7 @@ export default function ConsultPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
+  const [chatEnded, setChatEnded] = useState(false);
   
   const currentKeyIndex = useRef(0);
 
@@ -88,11 +89,13 @@ export default function ConsultPage() {
       role: "system", 
       content: `You are MediKiosk, an expert AI medical triage assistant used by patients in a hospital waiting room (OPD).
 ${patientContext}
-Your goals:
-1. Ask ONE brief, empathetic follow-up question at a time to understand their symptoms.
-2. If the patient mentions severe or red-flag symptoms (e.g., chest pain, stroke signs, severe bleeding, sudden loss of vision, unbearable pain, difficulty breathing), you MUST prepend your response with the exact tag: [CRITICAL]
-3. Keep language very simple, accessible, and suitable for elderly patients. Do not give medical diagnoses, only gather information.
-4. CRITICAL: You MUST communicate EXCLUSIVELY in ${langContext}. All your responses must be written in the ${langContext} script. Never use English unless the patient specifically asks for it.`
+Your goals & rules:
+1. You MUST ask exactly 10 brief, empathetic follow-up questions to understand their symptoms. Ask ONE question at a time.
+2. If the patient mentions severe/red-flag symptoms (e.g., severe pain, stroke, heavy bleeding, sudden vision loss, difficulty breathing), you MUST prepend your response with exactly: [CRITICAL]
+3. If the patient asks for a solution or remedy for their problem, you must provide basic, safe advice or solutions.
+4. Keep language simple, accessible, and suitable for elderly patients.
+5. On your 10th response, you MUST conclude the chat and append exactly the tag: [FINAL_SUMMARY] followed by a concise, bulleted summary of all the patient's problems and symptoms.
+6. CRITICAL: You MUST communicate EXCLUSIVELY in ${langContext}. All your responses must be written in the ${langContext} script. Never use English unless the patient asks for it.`
     });
 
     const response = await fetch("/api/chat", {
@@ -131,6 +134,16 @@ Your goals:
         // Save to local storage so the Doctor Panel can see it
         localStorage.setItem("medikiosk_critical_alert", "true");
         localStorage.setItem("medikiosk_critical_reason", userText);
+      }
+
+      // Check if AI generated a final summary
+      if (aiResponse.includes("[FINAL_SUMMARY]")) {
+        const parts = aiResponse.split("[FINAL_SUMMARY]");
+        aiResponse = parts[0].trim();
+        const summary = parts[1].trim();
+        
+        localStorage.setItem("ai_triage_summary", summary);
+        setChatEnded(true);
       }
 
       setMessages(prev => [...prev, { role: 'ai', text: aiResponse }]);
@@ -256,17 +269,26 @@ Your goals:
 
           {/* Input Area (Sticky Bottom via Flex) */}
           <div className="bg-white p-4 md:p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] border-t border-slate-100 z-20 shrink-0">
-            {/* Text Input Row */}
-            <div className="flex gap-2 md:gap-4 items-center">
-              <input 
-                type="text"
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder={isRecording ? "Listening..." : "Type your symptoms..."}
-                className="flex-1 p-3 md:p-4 text-base md:text-lg bg-slate-50 border-2 border-slate-200 rounded-xl md:rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all"
-              />
-              <motion.button
+            {chatEnded ? (
+              <div className="p-4 bg-emerald-50 text-emerald-800 rounded-2xl text-center border border-emerald-100 shadow-inner">
+                <p className="font-bold">Consultation Complete</p>
+                <p className="text-sm mt-1">Your symptoms have been securely saved and summarized for the doctor.</p>
+                <Button onClick={() => router.push('/dashboard')} className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl">
+                  Back to Dashboard
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 md:gap-4 w-full">
+              <div className="flex gap-2 md:gap-4 items-center">
+                <input 
+                  type="text"
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                  placeholder={isRecording ? "Listening..." : "Type your symptoms..."}
+                  className="flex-1 p-3 md:p-4 text-base md:text-lg bg-slate-50 border-2 border-slate-200 rounded-xl md:rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all"
+                />
+                <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={toggleRecording}
@@ -302,8 +324,9 @@ Your goals:
                 Submit to Doctor
               </Button>
             </div>
+            </div>
+            )}
           </div>
-
         </div>
       </div>
     </main>
