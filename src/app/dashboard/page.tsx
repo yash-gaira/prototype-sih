@@ -58,6 +58,13 @@ export default function UserDashboard() {
         setNextAppt(appt);
       } catch(e) {}
     }
+
+    const familyRaw = localStorage.getItem("medikiosk_family_members");
+    if (familyRaw) {
+      try {
+        setFamilyMembers(JSON.parse(familyRaw));
+      } catch(e) {}
+    }
   }, []);
 
   const [notifications, setNotifications] = useState([
@@ -135,13 +142,17 @@ export default function UserDashboard() {
     const colors = ["orange", "teal", "green", "blue", "purple", "red"];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
     
-    setFamilyMembers([...familyMembers, {
+    const newMember = {
       id: Date.now(),
       name: newMemberName,
       relation: newMemberRelation,
       initial: newMemberName.charAt(0).toUpperCase(),
       color: randomColor
-    }]);
+    };
+
+    const newMembers = [...familyMembers, newMember];
+    setFamilyMembers(newMembers);
+    localStorage.setItem("medikiosk_family_members", JSON.stringify(newMembers));
     
     setNewMemberName("");
     setNewMemberRelation("");
