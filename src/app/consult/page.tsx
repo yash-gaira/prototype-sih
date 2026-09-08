@@ -6,6 +6,7 @@ import { AlertToast } from "@/components/ui/AlertToast";
 import { Mic, FileText, Send, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Sidebar from "@/components/Sidebar";
 
 // Groq API Keys
 const GROQ_KEYS = [
@@ -185,10 +186,10 @@ Your goals:
               <h2 className="text-xl md:text-3xl font-bold text-slate-800 tracking-tight">MediKiosk AI</h2>
               <p className="text-sm text-slate-500 font-medium mt-1">Smart Medical Triage</p>
             </div>
-            <Button variant="outline" size="sm" className="md:hidden text-xs" onClick={() => router.push("/dashboard")}>
+            <Button variant="outline" size="default" className="md:hidden text-xs" onClick={() => router.push("/dashboard")}>
               Exit
             </Button>
-            <Button variant="outline" size="lg" className="hidden md:flex" onClick={() => router.push("/doctor")}>
+            <Button variant="outline" size="default" className="hidden md:flex" onClick={() => router.push("/doctor")}>
               Doctor View
             </Button>
           </header>
@@ -249,7 +250,7 @@ Your goals:
                 placeholder={isRecording ? "Listening..." : "Type your symptoms..."}
                 className="flex-1 p-3 md:p-4 text-base md:text-lg bg-slate-50 border-2 border-slate-200 rounded-xl md:rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all"
               />
-              <Button size="lg" onClick={handleSend} disabled={!inputText.trim() || isLoading} className="h-full py-3 md:py-4 px-4 md:px-8 rounded-xl md:rounded-2xl">
+              <Button size="default" onClick={handleSend} disabled={!inputText.trim() || isLoading} className="h-full py-3 md:py-4 px-4 md:px-8 rounded-xl md:rounded-2xl">
                 <Send className="w-5 h-5 md:w-6 md:h-6" />
               </Button>
             </div>
@@ -263,13 +264,13 @@ Your goals:
               onChange={handleFileUpload} 
             />
             <div className="flex gap-2 md:gap-4 mt-3 md:mt-4">
-              <Button onClick={() => fileInputRef.current?.click()} variant="outline" size="sm" className="flex-1 text-sm md:text-base py-4 md:py-6 rounded-xl md:rounded-2xl border-slate-300 text-slate-700 hover:bg-slate-50">
+              <Button onClick={() => fileInputRef.current?.click()} variant="outline" size="default" className="flex-1 text-sm md:text-base py-4 md:py-6 rounded-xl md:rounded-2xl border-slate-300 text-slate-700 hover:bg-slate-50">
                 <FileText className="w-4 h-4 md:w-5 md:h-5 mr-2 text-slate-500" />
                 <span className="hidden md:inline">Scan Old Reports</span>
                 <span className="md:hidden">Scan</span>
               </Button>
               
-              <Button onClick={() => router.push("/dashboard")} variant="default" size="sm" className="flex-1 text-sm md:text-base py-4 md:py-6 rounded-xl md:rounded-2xl bg-[#0f4b3e] hover:bg-emerald-800 text-white font-bold shadow-lg">
+              <Button onClick={() => router.push("/dashboard")} variant="default" size="default" className="flex-1 text-sm md:text-base py-4 md:py-6 rounded-xl md:rounded-2xl bg-[#0f4b3e] hover:bg-emerald-800 text-white font-bold shadow-lg">
                 Submit to Doctor
               </Button>
             </div>
