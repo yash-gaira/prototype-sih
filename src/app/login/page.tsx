@@ -105,19 +105,46 @@ export default function LoginScreen() {
       try {
         // Run offline Tesseract OCR to read text
         const { data: { text } } = await Tesseract.recognize(base64, 'eng');
+        console.log("Raw OCR Text:", text);
 
-        // Send messy text to Groq AI to parse neatly into JSON
-        const res = await fetch("/api/ocr", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ rawText: text })
-        });
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.error || "OCR Failed");
+        let extracted = {
+          name: "",
+          dob: "",
+          gender: "",
+          aadhaarNumber: ""
+        };
+
+        // Extract Aadhaar Number
+        const aadhaarMatch = text.match(/\d{4}\s\d{4}\s\d{4}/);
+        if (aadhaarMatch) extracted.aadhaarNumber = aadhaarMatch[0];
+
+        // Extract DOB
+        const dobMatch = text.match(/(?:DOB|Year of Birth|YOB).*?(\d{2}\/\d{2}\/\d{4}|\d{4})/i);
+        if (dobMatch) extracted.dob = dobMatch[1];
+
+        // Extract Gender
+        const genderMatch = text.match(/(Male|Female|MALE|FEMALE)/i);
+        if (genderMatch) {
+          extracted.gender = (genderMatch[1].toUpperCase() === 'MALE') ? 'Male' : 'Female';
         }
-        const data = await res.json();
-        setAadhaarDetails(data);
+
+        // Extract Name
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2);
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].toLowerCase().includes("dob") || lines[i].toLowerCase().includes("year of birth")) {
+            if (i > 0) {
+              extracted.name = lines[i-1].replace(/[^a-zA-Z\s]/g, '').trim();
+            }
+            break;
+          }
+        }
+
+        // If completely failed to find anything, show an error
+        if (!extracted.aadhaarNumber && !extracted.name) {
+          throw new Error("Could not detect any Aadhaar details. Please try again with a clearer photo.");
+        }
+
+        setAadhaarDetails(extracted);
       } catch (err: any) {
         console.error("OCR Error:", err);
         alert(`Aadhaar Scan Error: ${err.message || "Please try again with a clearer photo."}`);
