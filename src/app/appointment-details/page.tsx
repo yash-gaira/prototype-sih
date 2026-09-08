@@ -1,10 +1,33 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ChevronLeft, Calendar, User, Clock, MapPin, QrCode } from "lucide-react";
 
 export default function AppointmentDetailsScreen() {
   const router = useRouter();
+  
+  const [appt, setAppt] = useState({
+    date: "15 Sep",
+    time: "11:00 AM",
+    doctor: "Dr. R. Verma",
+    dept: "Ayurveda"
+  });
+
+  useEffect(() => {
+    const raw = localStorage.getItem("medikiosk_next_appointment");
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        setAppt({
+          date: parsed.date || "15 Sep",
+          time: parsed.time || "11:00 AM",
+          doctor: parsed.doctor || "Dr. R. Verma",
+          dept: parsed.dept || "Ayurveda"
+        });
+      } catch(e) {}
+    }
+  }, []);
 
   return (
     <main className="flex justify-center min-h-screen bg-[#0f4b3e] sm:p-4">
@@ -31,20 +54,20 @@ export default function AppointmentDetailsScreen() {
               <div className="flex justify-between items-start mb-6">
                  <div>
                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Date</p>
-                   <p className="text-2xl font-black text-slate-900">15 Sep</p>
+                   <p className="text-2xl font-black text-slate-900">{appt.date}</p>
                  </div>
                  <div className="text-right">
                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Time</p>
-                   <p className="text-2xl font-black text-[#0f4b3e]">11:00 AM</p>
+                   <p className="text-2xl font-black text-[#0f4b3e]">{appt.time}</p>
                  </div>
               </div>
 
               <div className="space-y-4">
                  <div className="flex items-center gap-3">
-                   <User className="w-5 h-5 text-slate-400" />
+                   <User className="w-5 h-5 text-slate-400 shrink-0" />
                    <div>
-                     <p className="font-bold text-slate-900">Dr. R. Verma</p>
-                     <p className="text-xs text-slate-500">Ayurveda Specialist</p>
+                     <p className="font-bold text-slate-900">{appt.doctor}</p>
+                     <p className="text-xs text-slate-500">{appt.dept} Specialist</p>
                    </div>
                  </div>
                  <div className="flex items-center gap-3">
