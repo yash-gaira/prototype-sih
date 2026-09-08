@@ -12,7 +12,8 @@ import {
   FlaskConical, 
   Download, 
   Share2, 
-  Maximize2 
+  Maximize2,
+  Calendar
 } from "lucide-react";
 
 type DocumentType = {
