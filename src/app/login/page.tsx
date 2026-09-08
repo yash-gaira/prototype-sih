@@ -7,7 +7,8 @@ import { Phone, UploadCloud, CreditCard, ChevronRight, ChevronLeft } from "lucid
 import { motion, AnimatePresence } from "framer-motion";
 import { t } from "@/lib/translations";
 import { db, auth } from "@/lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { collection, doc, setDoc } from "firebase/firestore";
+import Tesseract from 'tesseract.js';
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 
 export default function LoginScreen() {
@@ -100,12 +101,16 @@ export default function LoginScreen() {
     
     const reader = new FileReader();
     reader.onload = async (event) => {
-      const base64 = event.target?.result;
+      const base64 = event.target?.result as string;
       try {
+        // Run offline Tesseract OCR to read text
+        const { data: { text } } = await Tesseract.recognize(base64, 'eng');
+
+        // Send messy text to Groq AI to parse neatly into JSON
         const res = await fetch("/api/ocr", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imageBase64: base64 })
+          body: JSON.stringify({ rawText: text })
         });
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));

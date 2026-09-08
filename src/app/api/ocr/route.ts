@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { imageBase64 } = await req.json();
+    const { rawText } = await req.json();
 
-    if (!imageBase64) {
-      return NextResponse.json({ error: "No image provided" }, { status: 400 });
+    if (!rawText) {
+      return NextResponse.json({ error: "No text provided" }, { status: 400 });
     }
 
     const apiKey = process.env.NEXT_PUBLIC_GROQ_API_KEY || process.env.GROQ_API_KEY || process.env.GROQ_API_KEY_1 || process.env.GROQ_API_KEY_2;
@@ -13,14 +13,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing Groq API Key" }, { status: 500 });
     }
 
-    const prompt = `You are a highly accurate OCR extraction system. Extract the following details from this Aadhaar Card image and return ONLY a valid JSON object, nothing else. Do not wrap it in markdown block quotes. If a field is not found, leave it empty.
+    const prompt = `You are a highly accurate data extraction system. Extract the following details from this messy OCR text from an Aadhaar Card and return ONLY a valid JSON object, nothing else. Do not wrap it in markdown block quotes. If a field is not found, leave it empty.
 Expected JSON format:
 {
   "name": "Full Name",
   "dob": "DD/MM/YYYY or YYYY",
   "gender": "Male / Female / Other",
   "aadhaarNumber": "XXXX XXXX XXXX"
-}`;
+}
+
+OCR Text:
+"""
+${rawText}
+"""`;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -29,24 +34,16 @@ Expected JSON format:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.2-11b-vision-preview",
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: prompt },
-              { type: "image_url", image_url: { url: imageBase64 } }
-            ]
-          }
-        ],
+        model: "openai/gpt-oss-120b",
+        messages: [{ role: "user", content: prompt }],
         temperature: 0.1,
       }),
     });
 
     if (!response.ok) {
       const err = await response.text();
-      console.error("Groq Vision API error:", err);
-      // HACKATHON FALLBACK: If Groq API fails, return mock data so the demo doesn't stop
+      console.error("Groq Text API error:", err);
+      // HACKATHON FALLBACK
       return NextResponse.json({
         name: "Rahul Kumar",
         dob: "15/08/1985",
