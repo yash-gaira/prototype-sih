@@ -178,11 +178,8 @@ export default function UserDashboard() {
                   3
                 </span>
               </div>
-              <div className="hidden md:flex items-center gap-2 mt-2 text-emerald-900 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
-                <ShieldAlert className="w-5 h-5" />
-                <div className="text-right leading-none">
-                  <span className="text-sm font-bold block tracking-wide">AYUSH</span>
-                </div>
+              <div className="hidden md:flex items-center mt-2">
+                <img src="/ayush-logo.jpg" alt="Ministry of Ayush" className="h-12 object-contain" />
               </div>
             </div>
           </header>
