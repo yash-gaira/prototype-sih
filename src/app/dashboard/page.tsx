@@ -128,6 +128,19 @@ export default function UserDashboard() {
   const [uploadState, setUploadState] = useState<"idle" | "uploading" | "success">("idle");
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const colorClasses: Record<string, string> = {
     green: "bg-green-100 text-green-700 border-green-200",
@@ -212,7 +225,7 @@ export default function UserDashboard() {
           
           {/* Header */}
           <header className="px-6 md:px-10 pt-10 pb-4 flex justify-between items-start">
-            <div className="flex gap-4 items-center relative">
+            <div className="flex gap-4 items-center relative" ref={profileMenuRef}>
               <button 
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="w-14 h-14 md:w-16 md:h-16 bg-slate-200 rounded-full overflow-hidden flex items-center justify-center hover:bg-slate-300 transition-colors"
