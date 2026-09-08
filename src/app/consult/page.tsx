@@ -251,7 +251,6 @@ Your goals:
                 </div>
               </div>
             )}
-            )}
             <div ref={messagesEndRef} />
           </div>
 
