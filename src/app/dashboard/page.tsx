@@ -296,7 +296,20 @@ export default function UserDashboard() {
                   </div>
                   <div className="flex gap-4 md:gap-6 overflow-x-auto hide-scrollbar pb-2">
                     {familyMembers.map((member) => (
-                      <div key={member.id} className="flex flex-col items-center gap-2 flex-shrink-0">
+                      <div key={member.id} className="flex flex-col items-center gap-2 flex-shrink-0 relative group">
+                        {member.relation.toLowerCase() !== "you" && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const newMembers = familyMembers.filter(m => m.id !== member.id);
+                              setFamilyMembers(newMembers);
+                              localStorage.setItem("medikiosk_family_members", JSON.stringify(newMembers));
+                            }}
+                            className="absolute -top-1 -right-1 bg-white border border-slate-200 text-rose-500 rounded-full p-1 shadow-sm opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10 hover:bg-rose-50"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
                         <button className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center text-xl md:text-2xl font-bold ${colorClasses[member.color]} border-2`}>
                           {member.initial}
                         </button>
