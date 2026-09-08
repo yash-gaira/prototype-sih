@@ -7,11 +7,27 @@ import { ChevronLeft, Sparkles, Activity, FileHeart } from "lucide-react";
 export default function AISummaryScreen() {
   const router = useRouter();
   const [summary, setSummary] = useState("");
+  const [riskFactor, setRiskFactor] = useState("Low");
+  const [docCount, setDocCount] = useState(0);
 
   useEffect(() => {
     const storedSummary = localStorage.getItem("ai_triage_summary");
     if (storedSummary) {
       setSummary(storedSummary);
+      
+      const lower = storedSummary.toLowerCase();
+      if (lower.includes("blood") || lower.includes("severe") || lower.includes("10/10") || lower.includes("critical") || lower.includes("chest pain") || lower.includes("breathing") || lower.includes("stroke") || lower.includes("emergency")) {
+        setRiskFactor("High");
+      } else if (lower.includes("moderate") || lower.includes("fever") || lower.includes("dizzy") || lower.includes("pain")) {
+        setRiskFactor("Medium");
+      }
+    }
+
+    const docs = localStorage.getItem("custom_documents");
+    if (docs) {
+      try {
+        setDocCount(JSON.parse(docs).length);
+      } catch (e) {}
     }
   }, []);
 
@@ -56,15 +72,15 @@ export default function AISummaryScreen() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-red-50 p-4 rounded-2xl border border-red-100">
-              <Activity className="w-6 h-6 text-red-500 mb-2" />
+            <div className={`p-4 rounded-2xl border ${riskFactor === 'High' ? 'bg-red-50 border-red-100' : riskFactor === 'Medium' ? 'bg-amber-50 border-amber-100' : 'bg-emerald-50 border-emerald-100'}`}>
+              <Activity className={`w-6 h-6 mb-2 ${riskFactor === 'High' ? 'text-red-500' : riskFactor === 'Medium' ? 'text-amber-500' : 'text-emerald-500'}`} />
               <p className="text-xs text-slate-500">Risk Factor</p>
-              <p className="font-bold text-slate-900">Low</p>
+              <p className="font-bold text-slate-900">{riskFactor}</p>
             </div>
             <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
               <FileHeart className="w-6 h-6 text-emerald-600 mb-2" />
               <p className="text-xs text-slate-500">Records Analysed</p>
-              <p className="font-bold text-slate-900">4 Docs</p>
+              <p className="font-bold text-slate-900">{docCount} {docCount === 1 ? 'Doc' : 'Docs'}</p>
             </div>
           </div>
         </div>
