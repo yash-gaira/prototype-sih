@@ -57,6 +57,7 @@ export default function UserDashboard() {
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadState, setUploadState] = useState<"idle" | "uploading" | "success">("idle");
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const colorClasses: Record<string, string> = {
     green: "bg-green-100 text-green-700 border-green-200",
@@ -183,7 +184,7 @@ export default function UserDashboard() {
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <div className="relative cursor-pointer hover:bg-slate-50 p-2 rounded-full transition-colors">
+              <div className="relative cursor-pointer hover:bg-slate-50 p-2 rounded-full transition-colors" onClick={() => setShowNotifications(!showNotifications)}>
                 <Bell className="w-7 h-7 text-emerald-800" />
                 <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white">
                   3
@@ -367,11 +368,6 @@ export default function UserDashboard() {
           </button>
           
           <button onClick={() => router.push("/history")} className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-emerald-800 transition-colors">
-            <Clock className="w-6 h-6" />
-            <span className="text-[10px] font-semibold">History</span>
-          </button>
-
-          <button onClick={() => router.push("/history")} className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-emerald-800 transition-colors">
             <Calendar className="w-6 h-6" />
             <span className="text-[10px] font-semibold">Visits</span>
           </button>
@@ -389,6 +385,53 @@ export default function UserDashboard() {
 
         {/* Modals */}
         <AnimatePresence>
+          {showNotifications && (
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 md:p-0"
+              onClick={() => setShowNotifications(false)}
+            >
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl relative"
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-2xl font-bold text-slate-900">Notifications</h3>
+                  <button onClick={() => setShowNotifications(false)} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                  <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex gap-4 items-start">
+                    <div className="mt-1 p-2 bg-emerald-200 text-emerald-800 rounded-full"><CheckCircle2 className="w-5 h-5" /></div>
+                    <div>
+                      <h4 className="font-bold text-emerald-900">Welcome to MediKiosk!</h4>
+                      <p className="text-sm text-emerald-800 mt-1">Your Ayush health ID is generated. You can now consult the AI.</p>
+                      <p className="text-xs text-emerald-600 mt-2 font-medium">Just now</p>
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100 flex gap-4 items-start">
+                    <div className="mt-1 p-2 bg-blue-200 text-blue-800 rounded-full"><Sparkles className="w-5 h-5" /></div>
+                    <div>
+                      <h4 className="font-bold text-blue-900">AI Triage Ready</h4>
+                      <p className="text-sm text-blue-800 mt-1">Try our new AI assessment tool to reduce your consultation time.</p>
+                      <p className="text-xs text-blue-600 mt-2 font-medium">2 hours ago</p>
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-orange-50 border border-orange-100 flex gap-4 items-start">
+                    <div className="mt-1 p-2 bg-orange-200 text-orange-800 rounded-full"><ShieldAlert className="w-5 h-5" /></div>
+                    <div>
+                      <h4 className="font-bold text-orange-900">Complete your Profile</h4>
+                      <p className="text-sm text-orange-800 mt-1">Please add your past medical history for better AI diagnosis.</p>
+                      <p className="text-xs text-orange-600 mt-2 font-medium">1 day ago</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+
           {showAddMember && (
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}

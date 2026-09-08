@@ -279,20 +279,20 @@ Your goals & rules:
               </div>
             ) : (
               <div className="flex flex-col gap-3 md:gap-4 w-full">
-              <div className="flex gap-2 md:gap-4 items-center">
+              <div className="flex gap-2 md:gap-4 items-center w-full">
                 <input 
                   type="text"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                   placeholder={isRecording ? "Listening..." : "Type your symptoms..."}
-                  className="flex-1 p-3 md:p-4 text-base md:text-lg bg-slate-50 border-2 border-slate-200 rounded-xl md:rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all"
+                  className="flex-1 w-0 min-w-0 p-3 md:p-4 text-sm md:text-lg bg-slate-50 border-2 border-slate-200 rounded-xl md:rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all"
                 />
                 <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={toggleRecording}
-                className={`h-full py-3 md:py-4 px-4 md:px-6 rounded-xl md:rounded-2xl flex items-center justify-center transition-colors border-2 ${
+                className={`flex-shrink-0 w-12 h-12 md:w-auto md:h-auto md:py-4 md:px-6 rounded-xl md:rounded-2xl flex items-center justify-center transition-colors border-2 ${
                   isRecording 
                     ? 'bg-red-50 border-red-500 text-red-500 animate-pulse' 
                     : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-600'
@@ -300,7 +300,7 @@ Your goals & rules:
               >
                 <Mic className="w-5 h-5 md:w-6 md:h-6" />
               </motion.button>
-              <Button size="default" onClick={handleSend} disabled={!inputText.trim() || isLoading} className="h-full py-3 md:py-4 px-4 md:px-8 rounded-xl md:rounded-2xl">
+              <Button size="default" onClick={handleSend} disabled={!inputText.trim() || isLoading} className="flex-shrink-0 w-12 h-12 md:w-auto md:h-auto md:py-4 md:px-8 rounded-xl md:rounded-2xl">
                 <Send className="w-5 h-5 md:w-6 md:h-6" />
               </Button>
             </div>
