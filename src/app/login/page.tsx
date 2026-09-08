@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { Phone, UploadCloud, CreditCard, ChevronRight, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { t } from "@/lib/translations";
+import { db, auth } from "@/lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -15,6 +17,8 @@ export default function LoginScreen() {
   const aadhaarInputRef = useRef<HTMLInputElement>(null);
 
   const [language, setLanguage] = useState<string | null>(null);
+  const [isLoadingOCR, setIsLoadingOCR] = useState(false);
+  const [aadhaarDetails, setAadhaarDetails] = useState<any>(null);
 
   const topLanguages = [
     { code: "en", name: "English", native: "English" },
@@ -29,7 +33,7 @@ export default function LoginScreen() {
     { code: "gu", name: "Gujarati", native: "ગુજરાતી" },
     { code: "ur", name: "Urdu", native: "اردو" },
     { code: "kn", name: "Kannada", native: "ಕನ್ನಡ" },
-    { code: "or", name: "Odia", native: "ଓଡ଼ିଆ" },
+    { code: "or", name: "Odia", native: "ଓଡ଼િଆ" },
     { code: "ml", name: "Malayalam", native: "മലയാളം" },
     { code: "pa", name: "Punjabi", native: "ਪੰਜਾਬੀ" },
   ];
@@ -84,96 +88,281 @@ export default function LoginScreen() {
     </div>
   );
 
-  const renderAuthSelection = () => (
-    <div className="w-full max-w-md space-y-12">
-      <div className="space-y-3 text-center md:text-left">
-        <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
-          {t(language, 'signIn')}
-        </h2>
-        <p className="text-lg text-slate-500 font-medium">
-          {t(language, 'chooseMethod')}
-        </p>
-      </div>
 
-      <div className="space-y-4 w-full">
-        <Button 
-          size="lg" 
-          variant={selectedMethod === "number" ? "default" : "outline"}
-          onClick={() => setSelectedMethod("number")}
-          className={`w-full text-lg flex justify-between px-6 py-6 h-auto border-2 transition-all ${selectedMethod === 'number' ? 'border-[#0f4b3e] bg-[#0f4b3e] text-white shadow-lg' : 'border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e]'}`}
-        >
-          <div className="flex items-center gap-4">
-            <div className={`p-2 rounded-lg ${selectedMethod === 'number' ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
-              <Phone className="w-6 h-6" />
-            </div>
-            <span className="font-bold">{t(language, 'mobileNumber')}</span>
-          </div>
-        </Button>
 
-        <Button 
-          size="lg" 
-          variant={selectedMethod === "abha" ? "default" : "outline"}
-          onClick={() => {
-             setSelectedMethod("abha");
-             abhaInputRef.current?.click();
-          }}
-          className={`w-full text-lg flex justify-between px-6 py-6 h-auto border-2 transition-all ${selectedMethod === 'abha' ? 'border-[#0f4b3e] bg-[#0f4b3e] text-white shadow-lg' : 'border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e]'}`}
-        >
-          <div className="flex items-center gap-4">
-            <div className={`p-2 rounded-lg ${selectedMethod === 'abha' ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
-              <UploadCloud className="w-6 h-6" />
-            </div>
-            <span className="font-bold">{t(language, 'uploadAbha')}</span>
-          </div>
-          <input type="file" accept="image/*,.pdf" className="hidden" ref={abhaInputRef} onChange={handleLogin} />
-        </Button>
+  const handleAadhaarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-        <Button 
-          size="lg" 
-          variant={selectedMethod === "aadhaar" ? "default" : "outline"}
-          onClick={() => {
-             setSelectedMethod("aadhaar");
-             aadhaarInputRef.current?.click();
-          }}
-          className={`w-full text-lg flex justify-between px-6 py-6 h-auto border-2 transition-all ${selectedMethod === 'aadhaar' ? 'border-[#0f4b3e] bg-[#0f4b3e] text-white shadow-lg' : 'border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e]'}`}
-        >
-          <div className="flex items-center gap-4">
-            <div className={`p-2 rounded-lg ${selectedMethod === 'aadhaar' ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
-              <CreditCard className="w-6 h-6" />
-            </div>
-            <span className="font-bold">{t(language, 'aadhaarOtp')}</span>
-          </div>
-          <input type="file" accept="image/*,.pdf" className="hidden" ref={aadhaarInputRef} onChange={handleLogin} />
-        </Button>
-      </div>
+    setIsLoadingOCR(true);
+    setSelectedMethod("aadhaar");
+    
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64 = event.target?.result;
+      try {
+        const res = await fetch("/api/ocr", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageBase64: base64 })
+        });
+        if (!res.ok) throw new Error("OCR Failed");
+        const data = await res.json();
+        setAadhaarDetails(data);
+      } catch (err) {
+        console.error("Failed to extract Aadhaar details", err);
+        alert("Could not extract details. Please try again with a clearer photo.");
+      } finally {
+        setIsLoadingOCR(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
-      <AnimatePresence>
-        {selectedMethod === "number" && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0, y: -20 }}
-            animate={{ opacity: 1, height: "auto", y: 0 }}
-            exit={{ opacity: 0, height: 0, y: -20 }}
-            className="w-full flex flex-col gap-4 pt-4"
-          >
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold border-r border-slate-300 pr-3">+91</span>
-              <input 
-                type="tel"
-                placeholder={t(language, 'enterNumber')}
-                className="w-full p-4 pl-16 text-lg font-medium bg-white border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-[#0f4b3e] focus:ring-4 focus:ring-emerald-100 transition-all shadow-sm"
-              />
-            </div>
-            <Button onClick={handleLogin} className="w-full py-6 text-lg font-bold bg-[#0f4b3e] hover:bg-emerald-800 text-white rounded-2xl shadow-lg">
-              {t(language, 'sendOtp')} <ChevronRight className="w-5 h-5 ml-2" />
-            </Button>
-            <p className="text-center text-xs text-slate-500 mt-6 max-w-xs mx-auto">
-              {t(language, 'terms')}
+  const confirmAadhaarAndLogin = async () => {
+    try {
+      const uniqueId = aadhaarDetails.aadhaarNumber || Date.now().toString();
+      
+      // Save to Firebase
+      await setDoc(doc(db, "users", uniqueId), {
+        ...aadhaarDetails,
+        authMethod: 'aadhaar',
+        createdAt: new Date().toISOString()
+      });
+
+      // Save to local storage so AI and Dashboard can access it
+      localStorage.setItem("medikiosk_patient_profile", JSON.stringify(aadhaarDetails));
+      
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Error saving user to Firebase:", err);
+      // Even if Firebase fails, proceed with local session for demo
+      localStorage.setItem("medikiosk_patient_profile", JSON.stringify(aadhaarDetails));
+      router.push("/dashboard");
+    }
+  };
+
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [otp, setOtp] = useState("");
+  const [confirmationResult, setConfirmationResult] = useState<any>(null);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+
+  const setupRecaptcha = () => {
+    if (!(window as any).recaptchaVerifier) {
+      const { RecaptchaVerifier } = require('firebase/auth');
+      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible',
+      });
+    }
+  };
+
+  const handleSendOtp = async () => {
+    if (phoneNumber.length !== 10) {
+      alert("Please enter a valid 10-digit number");
+      return;
+    }
+    setIsSendingOtp(true);
+    try {
+      setupRecaptcha();
+      const { signInWithPhoneNumber } = require('firebase/auth');
+      const appVerifier = (window as any).recaptchaVerifier;
+      const formattedNumber = `+91${phoneNumber}`;
+      
+      const confirmation = await signInWithPhoneNumber(auth, formattedNumber, appVerifier);
+      setConfirmationResult(confirmation);
+    } catch (err) {
+      console.error("Error sending OTP", err);
+      alert("Failed to send OTP. Please try again.");
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otp.length !== 6) {
+      alert("Please enter the 6-digit OTP");
+      return;
+    }
+    setIsVerifyingOtp(true);
+    try {
+      const result = await confirmationResult.confirm(otp);
+      
+      // Save minimal profile
+      localStorage.setItem("medikiosk_patient_profile", JSON.stringify({
+        phoneNumber: result.user.phoneNumber,
+        authMethod: 'phone'
+      }));
+      
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Error verifying OTP", err);
+      alert("Invalid OTP. Please try again.");
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
+
+  const renderAuthSelection = () => {
+    if (aadhaarDetails) {
+      return (
+        <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-4">
+          <div className="space-y-3 text-center md:text-left">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Verify Details
+            </h2>
+            <p className="text-lg text-slate-500 font-medium">
+              Please confirm the extracted details from your Aadhaar.
             </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+          </div>
+
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Full Name</label>
+              <input type="text" value={aadhaarDetails.name || ''} onChange={e => setAadhaarDetails({...aadhaarDetails, name: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">DOB / YOB</label>
+                <input type="text" value={aadhaarDetails.dob || ''} onChange={e => setAadhaarDetails({...aadhaarDetails, dob: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Gender</label>
+                <input type="text" value={aadhaarDetails.gender || ''} onChange={e => setAadhaarDetails({...aadhaarDetails, gender: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Aadhaar Number</label>
+              <input type="text" value={aadhaarDetails.aadhaarNumber || ''} onChange={e => setAadhaarDetails({...aadhaarDetails, aadhaarNumber: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+            </div>
+          </div>
+
+          <Button onClick={confirmAadhaarAndLogin} className="w-full py-6 text-lg font-bold bg-[#0f4b3e] hover:bg-emerald-800 text-white rounded-2xl shadow-lg">
+            Confirm & Login <ChevronRight className="w-5 h-5 ml-2" />
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="w-full max-w-md space-y-12">
+        <div className="space-y-3 text-center md:text-left">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+            {t(language, 'signIn')}
+          </h2>
+          <p className="text-lg text-slate-500 font-medium">
+            {t(language, 'chooseMethod')}
+          </p>
+        </div>
+
+        <div className="space-y-4 w-full relative">
+          {isLoadingOCR && (
+            <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-sm rounded-3xl flex flex-col items-center justify-center border-2 border-emerald-500/20 shadow-lg">
+              <div className="w-10 h-10 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mb-4" />
+              <p className="font-bold text-emerald-800">Scanning Aadhaar Card...</p>
+            </div>
+          )}
+
+          <Button 
+            size="lg" 
+            variant={selectedMethod === "number" ? "default" : "outline"}
+            onClick={() => setSelectedMethod("number")}
+            className={`w-full text-lg flex justify-between px-6 py-6 h-auto border-2 transition-all ${selectedMethod === 'number' ? 'border-[#0f4b3e] bg-[#0f4b3e] text-white shadow-lg' : 'border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e]'}`}
+          >
+            <div className="flex items-center gap-4">
+              <div className={`p-2 rounded-lg ${selectedMethod === 'number' ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
+                <Phone className="w-6 h-6" />
+              </div>
+              <span className="font-bold">{t(language, 'mobileNumber')}</span>
+            </div>
+          </Button>
+
+          <Button 
+            size="lg" 
+            variant={selectedMethod === "abha" ? "default" : "outline"}
+            onClick={() => {
+               setSelectedMethod("abha");
+               abhaInputRef.current?.click();
+            }}
+            className={`w-full text-lg flex justify-between px-6 py-6 h-auto border-2 transition-all ${selectedMethod === 'abha' ? 'border-[#0f4b3e] bg-[#0f4b3e] text-white shadow-lg' : 'border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e]'}`}
+          >
+            <div className="flex items-center gap-4">
+              <div className={`p-2 rounded-lg ${selectedMethod === 'abha' ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
+                <UploadCloud className="w-6 h-6" />
+              </div>
+              <span className="font-bold">{t(language, 'uploadAbha')}</span>
+            </div>
+            <input type="file" accept="image/*,.pdf" className="hidden" ref={abhaInputRef} onChange={handleLogin} />
+          </Button>
+
+          <Button 
+            size="lg" 
+            variant={selectedMethod === "aadhaar" ? "default" : "outline"}
+            onClick={() => {
+               aadhaarInputRef.current?.click();
+            }}
+            className={`w-full text-lg flex justify-between px-6 py-6 h-auto border-2 transition-all ${selectedMethod === 'aadhaar' ? 'border-[#0f4b3e] bg-[#0f4b3e] text-white shadow-lg' : 'border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e]'}`}
+          >
+            <div className="flex items-center gap-4">
+              <div className={`p-2 rounded-lg ${selectedMethod === 'aadhaar' ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
+                <CreditCard className="w-6 h-6" />
+              </div>
+              <span className="font-bold">{t(language, 'aadhaarOtp')}</span>
+            </div>
+            <input type="file" accept="image/*" capture="environment" className="hidden" ref={aadhaarInputRef} onChange={handleAadhaarUpload} />
+          </Button>
+        </div>
+
+        <AnimatePresence>
+          {selectedMethod === "number" && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0, y: -20 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -20 }}
+              className="w-full flex flex-col gap-4 pt-4"
+            >
+              {!confirmationResult ? (
+                <>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold border-r border-slate-300 pr-3">+91</span>
+                    <input 
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      placeholder={t(language, 'enterNumber')}
+                      className="w-full p-4 pl-16 text-lg font-medium bg-white border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-[#0f4b3e] focus:ring-4 focus:ring-emerald-100 transition-all shadow-sm"
+                    />
+                  </div>
+                  <div id="recaptcha-container"></div>
+                  <Button onClick={handleSendOtp} disabled={isSendingOtp || phoneNumber.length !== 10} className="w-full py-6 text-lg font-bold bg-[#0f4b3e] hover:bg-emerald-800 text-white rounded-2xl shadow-lg">
+                    {isSendingOtp ? "Sending..." : t(language, 'sendOtp')} <ChevronRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div className="relative">
+                    <input 
+                      type="text"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="Enter 6-digit OTP"
+                      className="w-full p-4 text-center tracking-widest text-lg font-bold bg-white border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-[#0f4b3e] focus:ring-4 focus:ring-emerald-100 transition-all shadow-sm"
+                    />
+                  </div>
+                  <Button onClick={handleVerifyOtp} disabled={isVerifyingOtp || otp.length !== 6} className="w-full py-6 text-lg font-bold bg-[#0f4b3e] hover:bg-emerald-800 text-white rounded-2xl shadow-lg">
+                    {isVerifyingOtp ? "Verifying..." : "Verify & Login"} <ChevronRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </>
+              )}
+              <p className="text-center text-xs text-slate-500 mt-6 max-w-xs mx-auto">
+                {t(language, 'terms')}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  };
 
   return (
     <main className="flex min-h-screen bg-slate-50 overflow-hidden">

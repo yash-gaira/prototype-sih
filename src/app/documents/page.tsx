@@ -15,6 +15,7 @@ import {
   Maximize2,
   Calendar
 } from "lucide-react";
+import Sidebar from "@/components/Sidebar";
 
 type DocumentType = {
   id: string;
@@ -68,14 +69,16 @@ export default function DocumentsScreen() {
   });
 
   const renderListView = () => (
-    <div className="flex flex-col h-full bg-white pb-6">
+    <div className="flex flex-col h-full bg-slate-50 pb-6 overflow-y-auto">
       {/* Header */}
-      <header className="px-6 pt-10 pb-4">
-        <button onClick={() => router.push("/dashboard")} className="mb-4">
+      <header className="px-6 md:px-10 pt-10 pb-4 bg-white flex items-center gap-4 border-b border-slate-100 sticky top-0 z-10 shadow-sm">
+        <button onClick={() => router.push("/dashboard")} className="md:hidden">
           <ChevronLeft className="w-8 h-8 text-slate-800" />
         </button>
-        <h1 className="text-3xl font-bold text-slate-900">Documents</h1>
-        <p className="text-sm text-slate-500 mt-1">All your health documents in one place</p>
+        <div>
+          <h1 className="text-xl md:text-3xl font-bold text-slate-900 tracking-tight">Documents</h1>
+          <p className="text-sm text-slate-500 font-medium mt-1">All your health documents in one place</p>
+        </div>
       </header>
 
       {/* Search Bar */}
@@ -152,9 +155,9 @@ export default function DocumentsScreen() {
   const renderDetailView = () => {
     if (!selectedDoc) return null;
     return (
-      <div className="flex flex-col h-full bg-slate-50">
+      <div className="flex flex-col h-full bg-slate-50 relative">
         {/* Header */}
-        <header className="px-6 pt-10 pb-4 bg-white flex items-center gap-4 shadow-sm z-10 relative">
+        <header className="px-6 md:px-10 pt-10 pb-4 bg-white flex items-center gap-4 shadow-sm z-10 sticky top-0">
           <button onClick={() => setSelectedDoc(null)}>
             <ChevronLeft className="w-8 h-8 text-slate-800" />
           </button>
@@ -234,7 +237,7 @@ export default function DocumentsScreen() {
         </div>
 
         {/* Action Bar */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 bg-white border-t border-slate-200 flex gap-4 z-10 rounded-t-3xl">
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-white border-t border-slate-200 flex gap-4 z-10 rounded-t-3xl md:rounded-none">
           <button 
             onClick={() => handleAction('download')}
             className="flex-1 flex items-center justify-center gap-2 py-3.5 border-2 border-[#0f4b3e] text-[#0f4b3e] rounded-xl font-bold hover:bg-emerald-50 transition-colors"
@@ -253,94 +256,109 @@ export default function DocumentsScreen() {
   };
 
   return (
-    <main className="flex justify-center min-h-screen bg-slate-100 font-sans sm:p-4">
-      <div className="w-full max-w-md bg-white sm:rounded-3xl h-full relative shadow-2xl overflow-hidden border-x border-slate-200 sm:border-y">
-        
-        {/* Main View Toggle */}
-        <AnimatePresence mode="wait">
-          {selectedDoc ? (
-            <motion.div 
-              key="detail"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="absolute inset-0 z-10 bg-white"
-            >
-              {renderDetailView()}
-            </motion.div>
-          ) : (
-            <motion.div 
-              key="list"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="absolute inset-0"
-            >
-              {renderListView()}
-            </motion.div>
-          )}
-        </AnimatePresence>
+    <main className="flex justify-center min-h-screen bg-slate-100 font-sans sm:p-4 md:p-8">
+      <div className="w-full max-w-md md:max-w-6xl md:w-full bg-white sm:rounded-3xl relative shadow-2xl overflow-hidden border-x border-slate-200 sm:border-y flex flex-col md:flex-row min-h-[100dvh] md:min-h-[800px]">
+        {/* Desktop Sidebar */}
+        <Sidebar />
 
-        {/* Bottom Sheet Backdrop */}
-        <AnimatePresence>
-          {showOptionsFor && (
-            <motion.div 
-              key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowOptionsFor(null)}
-              className="absolute inset-0 bg-slate-900/40 z-40"
-            />
-          )}
-          {showOptionsFor && (
-            <motion.div 
-              key="sheet"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 p-6 flex flex-col gap-2 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
-            >
-              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4" />
-              
-              <button onClick={() => handleAction('download')} className="flex items-center gap-4 p-4 hover:bg-slate-50 rounded-2xl transition-colors font-bold text-slate-800 w-full text-left">
-                <Download className="w-6 h-6 text-[#0f4b3e]" />
-                Download
-              </button>
-              <button onClick={() => handleAction('share')} className="flex items-center gap-4 p-4 hover:bg-slate-50 rounded-2xl transition-colors font-bold text-slate-800 w-full text-left">
-                <Share2 className="w-6 h-6 text-[#0f4b3e]" />
-                Share
-              </button>
-              <button onClick={() => handleAction('fullscreen')} className="flex items-center gap-4 p-4 hover:bg-slate-50 rounded-2xl transition-colors font-bold text-slate-800 w-full text-left">
-                <Maximize2 className="w-6 h-6 text-[#0f4b3e]" />
-                View Full Screen
-              </button>
-              
-              <button 
-                onClick={() => setShowOptionsFor(null)}
-                className="mt-4 p-4 font-bold text-slate-500 bg-slate-50 rounded-2xl w-full text-center hover:bg-slate-100 transition-colors"
+        <div className="flex-1 flex flex-col h-full bg-slate-50 relative overflow-hidden">
+          {/* Main View Toggle */}
+          <AnimatePresence mode="wait">
+            {selectedDoc ? (
+              <motion.div 
+                key="detail"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="absolute inset-0 z-10 bg-slate-50"
               >
-                Cancel
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                {renderDetailView()}
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="list"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="absolute inset-0 bg-slate-50"
+              >
+                {renderListView()}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        {/* Toast Notification */}
-        <AnimatePresence>
-          {toastMsg && (
-            <motion.div
-              initial={{ opacity: 0, y: 50, x: "-50%" }}
-              animate={{ opacity: 1, y: 0, x: "-50%" }}
-              exit={{ opacity: 0, y: 50, x: "-50%" }}
-              className="absolute bottom-6 left-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-lg z-50 whitespace-nowrap font-medium"
-            >
-              {toastMsg}
-            </motion.div>
-          )}
-        </AnimatePresence>
+          {/* Bottom Sheet Backdrop */}
+          <AnimatePresence>
+            {showOptionsFor && (
+              <motion.div 
+                key="backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-slate-900/40 z-40"
+                onClick={() => setShowOptionsFor(null)}
+              />
+            )}
+          </AnimatePresence>
 
+          {/* Bottom Sheet Modal */}
+          <AnimatePresence>
+            {showOptionsFor && (
+              <motion.div 
+                key="sheet"
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-50 overflow-hidden"
+              >
+                <div className="p-6">
+                  <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6" />
+                  <h3 className="font-bold text-slate-900 text-lg mb-6 px-2 truncate">{showOptionsFor.title}</h3>
+                  <div className="space-y-2">
+                    <button 
+                      onClick={() => { setSelectedDoc(showOptionsFor); setShowOptionsFor(null); }}
+                      className="w-full flex items-center gap-4 p-4 hover:bg-slate-50 rounded-2xl transition-colors font-semibold text-slate-700"
+                    >
+                      <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center"><Maximize2 className="w-5 h-5 text-slate-600" /></div>
+                      Open Document
+                    </button>
+                    <button 
+                      onClick={() => handleAction('download')}
+                      className="w-full flex items-center gap-4 p-4 hover:bg-slate-50 rounded-2xl transition-colors font-semibold text-slate-700"
+                    >
+                      <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center"><Download className="w-5 h-5 text-slate-600" /></div>
+                      Download PDF
+                    </button>
+                    <button 
+                      onClick={() => handleAction('share')}
+                      className="w-full flex items-center gap-4 p-4 hover:bg-slate-50 rounded-2xl transition-colors font-semibold text-slate-700"
+                    >
+                      <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center"><Share2 className="w-5 h-5 text-slate-600" /></div>
+                      Share with Doctor
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Toast Notification */}
+          <AnimatePresence>
+            {toastMsg && (
+              <motion.div 
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 50, scale: 0.9 }}
+                className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full text-sm font-bold shadow-xl z-50 flex items-center gap-2 whitespace-nowrap"
+              >
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                {toastMsg}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+        </div>
       </div>
     </main>
   );
