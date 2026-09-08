@@ -429,11 +429,20 @@ export default function UserDashboard() {
                     notifications.map(n => {
                       const Icon = n.icon;
                       return (
-                        <div key={n.id} className={`p-4 rounded-2xl ${n.bg} border ${n.border} flex gap-4 items-start`}>
-                          <div className={`mt-1 p-2 ${n.iconBg} ${n.textClass} rounded-full`}>
+                        <div key={n.id} className={`p-4 rounded-2xl ${n.bg} border ${n.border} flex gap-4 items-start relative group`}>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setNotifications(prev => prev.filter(x => x.id !== n.id));
+                            }}
+                            className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-white/50 text-slate-400 hover:text-slate-600 transition-colors opacity-0 group-hover:opacity-100 md:opacity-100"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                          <div className={`mt-1 p-2 ${n.iconBg} ${n.textClass} rounded-full shrink-0`}>
                             <Icon className="w-5 h-5" />
                           </div>
-                          <div>
+                          <div className="pr-6">
                             <h4 className={`font-bold ${n.textClass}`}>{n.title}</h4>
                             <p className={`text-sm ${n.descClass} mt-1`}>{n.message}</p>
                             <p className={`text-xs ${n.timeClass} mt-2 font-medium`}>{n.time}</p>
