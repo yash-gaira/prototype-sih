@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Sparkles, Activity, FileHeart } from "lucide-react";
+import { ChevronLeft, Sparkles, Activity, FileHeart, X, FileText } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function AISummaryScreen() {
   const router = useRouter();
   const [summary, setSummary] = useState("");
   const [riskFactor, setRiskFactor] = useState("Low");
   const [docCount, setDocCount] = useState(0);
+  const [docsList, setDocsList] = useState<any[]>([]);
+  const [showDocsModal, setShowDocsModal] = useState(false);
 
   useEffect(() => {
     const storedSummary = localStorage.getItem("ai_triage_summary");
@@ -26,7 +29,9 @@ export default function AISummaryScreen() {
     const docs = localStorage.getItem("custom_documents");
     if (docs) {
       try {
-        setDocCount(JSON.parse(docs).length);
+        const parsedDocs = JSON.parse(docs);
+        setDocCount(parsedDocs.length);
+        setDocsList(parsedDocs);
       } catch (e) {}
     }
   }, []);
@@ -77,13 +82,61 @@ export default function AISummaryScreen() {
               <p className="text-xs text-slate-500">Risk Factor</p>
               <p className="font-bold text-slate-900">{riskFactor}</p>
             </div>
-            <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+            <button 
+              onClick={() => {
+                if (docCount > 0) setShowDocsModal(true);
+              }}
+              className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 text-left transition-colors hover:bg-emerald-100"
+            >
               <FileHeart className="w-6 h-6 text-emerald-600 mb-2" />
               <p className="text-xs text-slate-500">Records Analysed</p>
               <p className="font-bold text-slate-900">{docCount} {docCount === 1 ? 'Doc' : 'Docs'}</p>
-            </div>
+            </button>
           </div>
         </div>
+
+        {/* Analysed Documents Modal */}
+        <AnimatePresence>
+          {showDocsModal && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex flex-col justify-end"
+              onClick={() => setShowDocsModal(false)}
+            >
+              <motion.div 
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="bg-white rounded-t-3xl p-6 max-h-[80vh] flex flex-col"
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-bold text-slate-900">Analysed Records</h2>
+                  <button onClick={() => setShowDocsModal(false)} className="p-2 bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200 transition-colors">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div className="overflow-y-auto pr-2 space-y-4">
+                  {docsList.map((doc, idx) => (
+                    <div key={idx} className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                      <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
+                        <FileText className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-900 line-clamp-1">{doc.name}</p>
+                        <p className="text-xs text-slate-500 mt-1">{doc.date} • {doc.type}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </div>
     </main>
