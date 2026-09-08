@@ -8,7 +8,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 });
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_GROQ_API_KEY || process.env.GROQ_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_GROQ_API_KEY || process.env.GROQ_API_KEY || process.env.GROQ_API_KEY_1 || process.env.GROQ_API_KEY_2;
     if (!apiKey) {
       return NextResponse.json({ error: "Missing Groq API Key" }, { status: 500 });
     }
