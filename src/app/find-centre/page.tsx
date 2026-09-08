@@ -36,7 +36,7 @@ export default function FindCentreScreen() {
           setUserState(detectedState);
           
           // Filter hospitals by state (case insensitive partial match)
-          let filtered = [];
+          let filtered: Hospital[] = [];
           if (detectedState) {
             filtered = ayushHospitals.filter(h => 
               h.state.toLowerCase().includes(detectedState.toLowerCase()) || 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -62,7 +62,7 @@ export default function BookAppointment() {
   const [selectedDate, setSelectedDate] = useState<any>(DATES[0]);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let filtered = ayushHospitals.slice(0, 3).map(h => ({
       ...h,
       distance: (Math.random() * 5 + 1).toFixed(1)
