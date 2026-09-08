@@ -44,7 +44,7 @@ export default function AppointmentDetailsScreen() {
         </header>
 
         {/* Ticket Card */}
-        <div className="flex-1 px-6 relative -mt-8">
+        <div className="flex-1 px-6 relative z-20 -mt-8">
           <div className="bg-white rounded-3xl p-6 shadow-xl relative overflow-hidden">
             {/* Cutouts for ticket effect */}
             <div className="absolute top-1/2 -left-4 w-8 h-8 bg-slate-50 rounded-full -translate-y-1/2" />
