@@ -45,9 +45,6 @@ export default function Sidebar() {
             <Home className="w-5 h-5" /> {t(language, 'dashboard')}
           </button>
           <button onClick={() => router.push("/history")} className={getButtonClass("/history")}>
-            <Clock className="w-5 h-5" /> {t(language, 'history')}
-          </button>
-          <button onClick={() => router.push("/history")} className={getButtonClass("/upcoming-visits")}>
             <Calendar className="w-5 h-5" /> {t(language, 'upcomingVisits')}
           </button>
           <button onClick={() => router.push("/documents")} className={getButtonClass("/documents")}>
