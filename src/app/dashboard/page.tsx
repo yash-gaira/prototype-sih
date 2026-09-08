@@ -215,7 +215,7 @@ export default function UserDashboard() {
             <div className="md:grid md:grid-cols-12 md:gap-8 h-full">
               
               {/* Left Column on Desktop */}
-              <div className="md:col-span-7 lg:col-span-8 flex flex-col gap-8">
+              <div className="md:col-span-6 lg:col-span-7 flex flex-col gap-8">
                 
                 {/* Health ID Card */}
                 <div className="px-6 md:px-0">
@@ -235,89 +235,69 @@ export default function UserDashboard() {
                 </div>
 
                 {/* Quick Actions */}
-                <div>
-                  <h2 className="text-xl font-extrabold text-slate-900 mb-6 px-6 md:px-0 tracking-tight">{t(language, 'quickActions')}</h2>
-                  
-                  {/* Horizontal scrolling on mobile, grid on desktop */}
-                  <div className="flex md:grid md:grid-cols-4 overflow-x-auto gap-4 md:gap-6 pb-6 md:pb-0 px-6 md:px-0 snap-x snap-mandatory hide-scrollbar">
-                    
-                    <button 
-                      onClick={() => router.push("/book-appointment")}
-                      className="snap-start shrink-0 w-[110px] md:w-auto flex flex-col items-center gap-3 p-4 bg-white rounded-3xl md:rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group"
-                    >
-                      <div className="w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
-                        <Calendar className="w-6 h-6" />
+                <div className="px-6 md:px-0">
+                  <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-4 md:mb-6">{t(language, 'quickActions')}</h3>
+                  <div className="grid grid-cols-4 gap-3 md:gap-6">
+                    <button onClick={() => router.push("/book-appointment")} className="flex flex-col items-center gap-2 md:gap-3 group">
+                      <div className="w-14 h-14 md:w-20 md:h-20 bg-white rounded-2xl md:rounded-3xl flex items-center justify-center text-emerald-600 shadow-sm border border-slate-100 group-hover:border-emerald-200 group-hover:bg-emerald-50 transition-colors">
+                        <Calendar className="w-6 h-6 md:w-8 md:h-8" />
                       </div>
-                      <span className="text-xs md:text-sm font-bold text-slate-700 text-center leading-tight">{t(language, 'bookAppointment')}</span>
+                      <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">Book<br/>Appointment</span>
                     </button>
-                    
-                    <button 
-                      onClick={handleUploadClick}
-                      className="snap-start shrink-0 w-[110px] md:w-auto flex flex-col items-center gap-3 p-4 bg-white rounded-3xl md:rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group"
-                    >
-                      <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                        <Upload className="w-6 h-6" />
+                    <button onClick={handleUploadClick} className="flex flex-col items-center gap-2 md:gap-3 group">
+                      <div className="w-14 h-14 md:w-20 md:h-20 bg-white rounded-2xl md:rounded-3xl flex items-center justify-center text-blue-600 shadow-sm border border-slate-100 group-hover:border-blue-200 group-hover:bg-blue-50 transition-colors">
+                        <Upload className="w-6 h-6 md:w-8 md:h-8" />
                       </div>
-                      <span className="text-xs md:text-sm font-bold text-slate-700 text-center leading-tight">{t(language, 'uploadDocument')}</span>
-                      <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,image/*" />
+                      <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">Upload<br/>Document</span>
                     </button>
-
-                    <button 
-                      onClick={() => router.push("/documents")}
-                      className="snap-start shrink-0 w-[110px] md:w-auto flex flex-col items-center gap-3 p-4 bg-white rounded-3xl md:rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group"
-                    >
-                      <div className="w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-colors">
-                        <FileText className="w-6 h-6" />
+                    <button onClick={() => router.push("/documents")} className="flex flex-col items-center gap-2 md:gap-3 group">
+                      <div className="w-14 h-14 md:w-20 md:h-20 bg-white rounded-2xl md:rounded-3xl flex items-center justify-center text-orange-600 shadow-sm border border-slate-100 group-hover:border-orange-200 group-hover:bg-orange-50 transition-colors">
+                        <FileText className="w-6 h-6 md:w-8 md:h-8" />
                       </div>
-                      <span className="text-xs md:text-sm font-bold text-slate-700 text-center leading-tight">{t(language, 'document')}</span>
+                      <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">Document<br/>History</span>
                     </button>
-
-                    <button 
-                      onClick={() => router.push("/find-centre")}
-                      className="snap-start shrink-0 w-[110px] md:w-auto flex flex-col items-center gap-3 p-4 bg-white rounded-3xl md:rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group"
-                    >
-                      <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center group-hover:bg-rose-600 group-hover:text-white transition-colors">
-                        <MapPin className="w-6 h-6" />
+                    <button onClick={() => router.push("/find-centre")} className="flex flex-col items-center gap-2 md:gap-3 group">
+                      <div className="w-14 h-14 md:w-20 md:h-20 bg-white rounded-2xl md:rounded-3xl flex items-center justify-center text-rose-600 shadow-sm border border-slate-100 group-hover:border-rose-200 group-hover:bg-rose-50 transition-colors">
+                        <MapPin className="w-6 h-6 md:w-8 md:h-8" />
                       </div>
-                      <span className="text-xs md:text-sm font-bold text-slate-700 text-center leading-tight">{t(language, 'findAyushCentre')}</span>
+                      <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">Find AYUSH<br/>Centre</span>
                     </button>
-
                   </div>
                 </div>
 
                 {/* Family Members */}
                 <div className="px-6 md:px-0">
-                  <h2 className="text-xl font-extrabold text-slate-900 mb-6 tracking-tight">{t(language, 'familyMembers')}</h2>
-                  
-                  <div className="flex flex-wrap gap-4 md:gap-6">
+                  <div className="flex justify-between items-end mb-4 md:mb-6">
+                    <h3 className="text-lg md:text-xl font-bold text-slate-900">{t(language, 'familyMembers')}</h3>
+                  </div>
+                  <div className="flex gap-4 md:gap-6 overflow-x-auto hide-scrollbar pb-2">
                     {familyMembers.map((member) => (
-                      <div key={member.id} className="flex flex-col items-center gap-2 cursor-pointer group">
-                        <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center text-xl md:text-2xl font-bold shadow-sm border-2 group-hover:scale-110 transition-transform ${colorClasses[member.color]}`}>
+                      <div key={member.id} className="flex flex-col items-center gap-2 flex-shrink-0">
+                        <button className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center text-xl md:text-2xl font-bold ${colorClasses[member.color]} border-2`}>
                           {member.initial}
-                        </div>
+                        </button>
                         <div className="text-center">
-                          <p className="text-xs md:text-sm font-bold text-slate-900 leading-none">{member.name}</p>
-                          <p className="text-[10px] md:text-xs font-medium text-slate-500 mt-1">{t(language, member.relation.toLowerCase())}</p>
+                          <p className="text-xs md:text-sm font-bold text-slate-800">{member.name}</p>
+                          <p className="text-[10px] md:text-xs text-slate-500 capitalize">{member.relation}</p>
                         </div>
                       </div>
                     ))}
-                    
-                    <button 
-                      onClick={() => setShowAddMember(true)}
-                      className="flex flex-col items-center gap-2 cursor-pointer group"
-                    >
-                      <div className="w-14 h-14 md:w-16 md:h-16 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-400 group-hover:border-emerald-500 group-hover:text-emerald-600 group-hover:bg-emerald-50 transition-all">
+                    <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                      <button 
+                        onClick={() => setShowAddMember(true)}
+                        className="w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center border-2 border-dashed border-slate-300 text-slate-400 hover:border-emerald-500 hover:text-emerald-500 hover:bg-emerald-50 transition-colors"
+                      >
                         <Plus className="w-6 h-6 md:w-8 md:h-8" />
-                      </div>
-                      <p className="text-xs md:text-sm font-bold text-slate-600 group-hover:text-emerald-700 mt-1">{t(language, 'add')}</p>
-                    </button>
+                      </button>
+                      <span className="text-xs md:text-sm font-semibold text-slate-500 mt-1">Add</span>
+                    </div>
                   </div>
                 </div>
 
               </div>
 
               {/* Right Column on Desktop */}
-              <div className="md:col-span-5 lg:col-span-4 mt-8 md:mt-0">
+              <div className="md:col-span-6 lg:col-span-5 mt-8 md:mt-0">
                 {/* Next Appointment */}
                 <div className="px-6 md:px-0">
                   <div className="bg-[#0f4b3e] rounded-3xl p-5 md:p-6 text-white shadow-xl relative overflow-hidden">
@@ -332,22 +312,22 @@ export default function UserDashboard() {
                     
                     <div className="flex gap-4 md:gap-6 relative z-10 bg-emerald-900/40 p-4 rounded-2xl">
                       <div className="flex flex-col items-center justify-center pr-4 md:pr-6 border-r border-emerald-600/50">
-                        <span className="text-4xl md:text-5xl font-extrabold tracking-tighter">{nextAppt.date}</span>
-                        <span className="text-xs md:text-sm font-bold tracking-widest mt-1 uppercase">{nextAppt.monthYear}</span>
+                        <span className="text-4xl md:text-5xl font-extrabold tracking-tighter">{nextAppt.date.split(" ")[0]}</span>
+                        <span className="text-xs md:text-sm font-bold tracking-widest mt-1 uppercase">{nextAppt.date.split(" ")[1] ? `${nextAppt.date.split(" ")[1]} 2026` : nextAppt.monthYear}</span>
                       </div>
                       
-                      <div className="flex flex-col justify-center gap-3">
+                      <div className="flex flex-col justify-center gap-3 min-w-0">
                         <div className="flex items-start gap-3">
-                          <User className="w-4 h-4 md:w-5 md:h-5 mt-0.5 text-emerald-200" />
-                          <div>
-                            <p className="font-bold text-sm md:text-base leading-none">{nextAppt.doctor}</p>
-                            <p className="text-xs md:text-sm text-emerald-100 mt-1">{nextAppt.dept} OPD</p>
+                          <User className="w-4 h-4 md:w-5 md:h-5 mt-0.5 text-emerald-200 flex-shrink-0" />
+                          <div className="min-w-0">
+                            <p className="font-bold text-sm md:text-base leading-none truncate">{nextAppt.doctor}</p>
+                            <p className="text-xs md:text-sm text-emerald-100 mt-1 truncate">{nextAppt.dept} OPD</p>
                           </div>
                         </div>
                         <div className="flex items-start gap-3">
-                          <Clock className="w-4 h-4 md:w-5 md:h-5 mt-0.5 text-emerald-200" />
-                          <div>
-                            <p className="font-bold text-sm md:text-base leading-none">{nextAppt.time}</p>
+                          <Clock className="w-4 h-4 md:w-5 md:h-5 mt-0.5 text-emerald-200 flex-shrink-0" />
+                          <div className="min-w-0">
+                            <p className="font-bold text-sm md:text-base leading-none truncate">{nextAppt.time}</p>
                           </div>
                         </div>
                       </div>
