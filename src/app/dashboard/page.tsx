@@ -60,6 +60,51 @@ export default function UserDashboard() {
     }
   }, []);
 
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      type: "success",
+      title: "Welcome to MediKiosk!",
+      message: "Your Ayush health ID is generated. You can now consult the AI.",
+      time: "Just now",
+      icon: CheckCircle2,
+      bg: "bg-emerald-50",
+      border: "border-emerald-100",
+      iconBg: "bg-emerald-200",
+      textClass: "text-emerald-900",
+      descClass: "text-emerald-800",
+      timeClass: "text-emerald-600"
+    },
+    {
+      id: 2,
+      type: "info",
+      title: "AI Triage Ready",
+      message: "Try our new AI assessment tool to reduce your consultation time.",
+      time: "2 hours ago",
+      icon: Sparkles,
+      bg: "bg-blue-50",
+      border: "border-blue-100",
+      iconBg: "bg-blue-200",
+      textClass: "text-blue-900",
+      descClass: "text-blue-800",
+      timeClass: "text-blue-600"
+    },
+    {
+      id: 3,
+      type: "warning",
+      title: "Complete your Profile",
+      message: "Please add your past medical history for better AI diagnosis.",
+      time: "1 day ago",
+      icon: ShieldAlert,
+      bg: "bg-orange-50",
+      border: "border-orange-100",
+      iconBg: "bg-orange-200",
+      textClass: "text-orange-900",
+      descClass: "text-orange-800",
+      timeClass: "text-orange-600"
+    }
+  ]);
+
   const [familyMembers, setFamilyMembers] = useState([
     { id: 1, name: "Naman", relation: "you", initial: "N", color: "green" },
     { id: 2, name: "Mother", relation: "mother", initial: "M", color: "red" },
@@ -167,9 +212,11 @@ export default function UserDashboard() {
             <div className="flex flex-col items-end gap-2">
               <div className="relative cursor-pointer hover:bg-slate-50 p-2 rounded-full transition-colors" onClick={() => setShowNotifications(!showNotifications)}>
                 <Bell className="w-7 h-7 text-emerald-800" />
-                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white">
-                  3
-                </span>
+                {notifications.length > 0 && (
+                  <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white">
+                    {notifications.length}
+                  </span>
+                )}
               </div>
               <button onClick={() => router.push("/ayush-assessment")} className="hidden md:flex items-center mt-2 cursor-pointer hover:scale-105 transition-transform">
                 <img src="/ayush-logo.jpg" alt="Ministry of Ayush" className="h-12 object-contain" />
@@ -359,35 +406,42 @@ export default function UserDashboard() {
               >
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-2xl font-bold text-slate-900">Notifications</h3>
-                  <button onClick={() => setShowNotifications(false)} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200">
-                    <X className="w-5 h-5" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {notifications.length > 0 && (
+                      <button onClick={() => setNotifications([])} className="text-xs font-bold text-slate-500 hover:text-rose-500 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors">
+                        Clear All
+                      </button>
+                    )}
+                    <button onClick={() => setShowNotifications(false)} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-                  <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex gap-4 items-start">
-                    <div className="mt-1 p-2 bg-emerald-200 text-emerald-800 rounded-full"><CheckCircle2 className="w-5 h-5" /></div>
-                    <div>
-                      <h4 className="font-bold text-emerald-900">Welcome to MediKiosk!</h4>
-                      <p className="text-sm text-emerald-800 mt-1">Your Ayush health ID is generated. You can now consult the AI.</p>
-                      <p className="text-xs text-emerald-600 mt-2 font-medium">Just now</p>
+                  {notifications.length === 0 ? (
+                    <div className="text-center py-8 flex flex-col items-center gap-3">
+                      <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center">
+                        <Bell className="w-8 h-8 text-slate-300" />
+                      </div>
+                      <p className="text-slate-500 font-medium">No new notifications</p>
                     </div>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100 flex gap-4 items-start">
-                    <div className="mt-1 p-2 bg-blue-200 text-blue-800 rounded-full"><Sparkles className="w-5 h-5" /></div>
-                    <div>
-                      <h4 className="font-bold text-blue-900">AI Triage Ready</h4>
-                      <p className="text-sm text-blue-800 mt-1">Try our new AI assessment tool to reduce your consultation time.</p>
-                      <p className="text-xs text-blue-600 mt-2 font-medium">2 hours ago</p>
-                    </div>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-orange-50 border border-orange-100 flex gap-4 items-start">
-                    <div className="mt-1 p-2 bg-orange-200 text-orange-800 rounded-full"><ShieldAlert className="w-5 h-5" /></div>
-                    <div>
-                      <h4 className="font-bold text-orange-900">Complete your Profile</h4>
-                      <p className="text-sm text-orange-800 mt-1">Please add your past medical history for better AI diagnosis.</p>
-                      <p className="text-xs text-orange-600 mt-2 font-medium">1 day ago</p>
-                    </div>
-                  </div>
+                  ) : (
+                    notifications.map(n => {
+                      const Icon = n.icon;
+                      return (
+                        <div key={n.id} className={`p-4 rounded-2xl ${n.bg} border ${n.border} flex gap-4 items-start`}>
+                          <div className={`mt-1 p-2 ${n.iconBg} ${n.textClass} rounded-full`}>
+                            <Icon className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h4 className={`font-bold ${n.textClass}`}>{n.title}</h4>
+                            <p className={`text-sm ${n.descClass} mt-1`}>{n.message}</p>
+                            <p className={`text-xs ${n.timeClass} mt-2 font-medium`}>{n.time}</p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </motion.div>
             </motion.div>
