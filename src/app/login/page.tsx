@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Phone, UploadCloud, CreditCard, ChevronRight, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { t } from "@/lib/translations";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -42,10 +43,10 @@ export default function LoginScreen() {
     <div className="w-full max-w-md space-y-8">
       <div className="space-y-3 text-center md:text-left">
         <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
-          Select Language
+          {t('en', 'selectLanguage')}
         </h2>
         <p className="text-lg text-slate-500 font-medium">
-          Choose your preferred language to continue
+          {t('en', 'chooseLanguage')}
         </p>
       </div>
 
@@ -64,7 +65,7 @@ export default function LoginScreen() {
         ))}
         
         <div className="pt-4 pb-2">
-          <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 text-center md:text-left">Other Languages</p>
+          <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 text-center md:text-left">{t('en', 'otherLanguages')}</p>
           <div className="grid grid-cols-2 gap-3">
             {otherLanguages.map((lang) => (
               <Button 
@@ -87,10 +88,10 @@ export default function LoginScreen() {
     <div className="w-full max-w-md space-y-12">
       <div className="space-y-3 text-center md:text-left">
         <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
-          Sign In
+          {t(language, 'signIn')}
         </h2>
         <p className="text-lg text-slate-500 font-medium">
-          Choose a method to verify your identity
+          {t(language, 'chooseMethod')}
         </p>
       </div>
 
@@ -105,7 +106,7 @@ export default function LoginScreen() {
             <div className={`p-2 rounded-lg ${selectedMethod === 'number' ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
               <Phone className="w-6 h-6" />
             </div>
-            <span className="font-bold">Mobile Number</span>
+            <span className="font-bold">{t(language, 'mobileNumber')}</span>
           </div>
         </Button>
 
@@ -122,7 +123,7 @@ export default function LoginScreen() {
             <div className={`p-2 rounded-lg ${selectedMethod === 'abha' ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
               <UploadCloud className="w-6 h-6" />
             </div>
-            <span className="font-bold">Upload ABHA Card</span>
+            <span className="font-bold">{t(language, 'uploadAbha')}</span>
           </div>
           <input type="file" accept="image/*,.pdf" className="hidden" ref={abhaInputRef} onChange={handleLogin} />
         </Button>
@@ -140,7 +141,7 @@ export default function LoginScreen() {
             <div className={`p-2 rounded-lg ${selectedMethod === 'aadhaar' ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
               <CreditCard className="w-6 h-6" />
             </div>
-            <span className="font-bold">Aadhaar Card OTP</span>
+            <span className="font-bold">{t(language, 'aadhaarOtp')}</span>
           </div>
           <input type="file" accept="image/*,.pdf" className="hidden" ref={aadhaarInputRef} onChange={handleLogin} />
         </Button>
@@ -158,13 +159,16 @@ export default function LoginScreen() {
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold border-r border-slate-300 pr-3">+91</span>
               <input 
                 type="tel"
-                placeholder="Enter 10-digit number"
+                placeholder={t(language, 'enterNumber')}
                 className="w-full p-4 pl-16 text-lg font-medium bg-white border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-[#0f4b3e] focus:ring-4 focus:ring-emerald-100 transition-all shadow-sm"
               />
             </div>
             <Button onClick={handleLogin} className="w-full py-6 text-lg font-bold bg-[#0f4b3e] hover:bg-emerald-800 text-white rounded-2xl shadow-lg">
-              Send OTP <ChevronRight className="w-5 h-5 ml-2" />
+              {t(language, 'sendOtp')} <ChevronRight className="w-5 h-5 ml-2" />
             </Button>
+            <p className="text-center text-xs text-slate-500 mt-6 max-w-xs mx-auto">
+              {t(language, 'terms')}
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -181,11 +185,9 @@ export default function LoginScreen() {
           <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-8 border border-white/20">
             <span className="text-3xl">🌿</span>
           </div>
-          <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
-            Welcome to <br/>MediKiosk
-          </h1>
+          <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-6" dangerouslySetInnerHTML={{ __html: t(language, 'welcomeTitle').replace('MediKiosk', '<br/>MediKiosk') }} />
           <p className="text-xl text-emerald-100/80 max-w-md font-medium leading-relaxed">
-            Your trusted gateway to AYUSH healthcare services. Secure, fast, and accessible triage.
+            {t(language, 'welcomeDesc')}
           </p>
         </div>
         
@@ -216,7 +218,7 @@ export default function LoginScreen() {
             className="flex-1 flex flex-col items-center justify-center p-8 w-full relative max-h-screen overflow-y-auto"
           >
             <button onClick={() => setLanguage(null)} className="absolute top-8 left-8 md:top-12 md:left-12 text-slate-400 hover:text-slate-600 font-semibold flex items-center gap-1">
-               <ChevronLeft className="w-5 h-5" /> Back
+               <ChevronLeft className="w-5 h-5" /> {t(language, 'back')}
             </button>
             {renderAuthSelection()}
           </motion.div>

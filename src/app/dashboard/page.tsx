@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Bell, 
@@ -20,15 +20,24 @@ import {
   X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { t } from "@/lib/translations";
 
 export default function UserDashboard() {
   const router = useRouter();
+  const [language, setLanguage] = useState<string>("en");
+
+  useEffect(() => {
+    const savedLang = localStorage.getItem("preferredLanguage");
+    if (savedLang) {
+      setLanguage(savedLang);
+    }
+  }, []);
 
   const [familyMembers, setFamilyMembers] = useState([
-    { id: 1, name: "Naman", relation: "You", initial: "N", color: "green" },
-    { id: 2, name: "Mother", relation: "Mother", initial: "M", color: "red" },
-    { id: 3, name: "Father", relation: "Father", initial: "F", color: "blue" },
-    { id: 4, name: "Sister", relation: "Sister", initial: "S", color: "purple" }
+    { id: 1, name: "Naman", relation: "you", initial: "N", color: "green" },
+    { id: 2, name: "Mother", relation: "mother", initial: "M", color: "red" },
+    { id: 3, name: "Father", relation: "father", initial: "F", color: "blue" },
+    { id: 4, name: "Sister", relation: "sister", initial: "S", color: "purple" }
   ]);
 
   const [showAddMember, setShowAddMember] = useState(false);
@@ -121,19 +130,19 @@ export default function UserDashboard() {
             
             <nav className="space-y-2">
               <button className="flex items-center gap-3 w-full px-4 py-3 bg-[#0f4b3e] text-white rounded-xl font-bold shadow-md shadow-emerald-900/10 transition-transform hover:scale-[1.02]">
-                <Home className="w-5 h-5" /> Dashboard
+                <Home className="w-5 h-5" /> {t(language, 'dashboard')}
               </button>
               <button onClick={() => router.push("/history")} className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
-                <Clock className="w-5 h-5" /> History
+                <Clock className="w-5 h-5" /> {t(language, 'history')}
               </button>
               <button onClick={() => router.push("/history")} className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
-                <Calendar className="w-5 h-5" /> Upcoming Visits
+                <Calendar className="w-5 h-5" /> {t(language, 'upcomingVisits')}
               </button>
               <button onClick={() => router.push("/documents")} className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
-                <FileText className="w-5 h-5" /> Documents
+                <FileText className="w-5 h-5" /> {t(language, 'documents')}
               </button>
               <button onClick={() => router.push("/ai-summary")} className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
-                <Sparkles className="w-5 h-5" /> AI Summary
+                <Sparkles className="w-5 h-5" /> {t(language, 'aiSummary')}
               </button>
             </nav>
           </div>
@@ -143,7 +152,7 @@ export default function UserDashboard() {
             className="flex items-center justify-center gap-3 w-full px-4 py-4 bg-blue-600 text-white shadow-lg hover:bg-blue-700 rounded-2xl font-bold transition-all hover:-translate-y-1"
           >
              <Sparkles className="w-5 h-5" />
-             AI Triage
+             {t(language, 'aiTriage')}
           </button>
         </aside>
 
@@ -157,9 +166,9 @@ export default function UserDashboard() {
                 <User className="w-8 h-8 md:w-10 md:h-10 text-slate-400" />
               </div>
               <div>
-                <p className="text-sm md:text-base text-slate-500 font-medium">Good morning,</p>
+                <p className="text-sm md:text-base text-slate-500 font-medium">{t(language, 'goodMorning')},</p>
                 <h1 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">Naman Mahra</h1>
-                <p className="text-xs md:text-sm text-slate-500 mt-0.5">Your health, our priority</p>
+                <p className="text-xs md:text-sm text-slate-500 mt-0.5">{t(language, 'yourHealthOurPriority')}</p>
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -192,9 +201,9 @@ export default function UserDashboard() {
                         <User className="w-6 h-6 md:w-8 md:h-8" />
                       </div>
                       <div>
-                        <p className="text-sm md:text-base font-bold text-emerald-900">My Health ID</p>
+                        <p className="text-sm md:text-base font-bold text-emerald-900">{t(language, 'myHealthId')}</p>
                         <p className="text-lg md:text-2xl font-bold text-emerald-900 tracking-widest my-0.5">XXXX XXXX 1234</p>
-                        <p className="text-xs md:text-sm text-emerald-700">View and manage your profile</p>
+                        <p className="text-xs md:text-sm text-emerald-700">{t(language, 'viewManageProfile')}</p>
                       </div>
                     </div>
                     <ChevronRight className="w-6 h-6 md:w-8 md:h-8 text-emerald-800" />
@@ -202,71 +211,82 @@ export default function UserDashboard() {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="px-6 md:px-0">
-                  <div className="flex justify-between items-center mb-4 md:mb-6">
-                    <h2 className="text-xl md:text-2xl font-bold text-slate-900">Quick Actions</h2>
-                  </div>
+                <div>
+                  <h2 className="text-xl font-extrabold text-slate-900 mb-6 px-6 md:px-0 tracking-tight">{t(language, 'quickActions')}</h2>
                   
-                  <div className="grid grid-cols-4 md:grid-cols-4 gap-3 md:gap-4">
-                    <button onClick={() => router.push("/book-appointment")} className="flex flex-col items-center gap-2 md:gap-3 group">
-                      <div className="w-16 h-16 md:w-20 md:h-20 bg-green-50 rounded-2xl md:rounded-3xl flex items-center justify-center shadow-sm border border-green-100 group-hover:bg-green-100 transition-colors">
-                        <Calendar className="w-7 h-7 md:w-8 md:h-8 text-green-600" />
+                  {/* Horizontal scrolling on mobile, grid on desktop */}
+                  <div className="flex md:grid md:grid-cols-4 overflow-x-auto gap-4 md:gap-6 pb-6 md:pb-0 px-6 md:px-0 snap-x snap-mandatory hide-scrollbar">
+                    
+                    <button 
+                      onClick={() => router.push("/book-appointment")}
+                      className="snap-start shrink-0 w-[110px] md:w-auto flex flex-col items-center gap-3 p-4 bg-white rounded-3xl md:rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group"
+                    >
+                      <div className="w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
+                        <Calendar className="w-6 h-6" />
                       </div>
-                      <span className="text-xs md:text-sm font-semibold text-slate-700 text-center leading-tight">Book<br/>Appointment</span>
+                      <span className="text-xs md:text-sm font-bold text-slate-700 text-center leading-tight">{t(language, 'bookAppointment')}</span>
                     </button>
                     
-                    <button onClick={() => setShowUploadModal(true)} className="flex flex-col items-center gap-2 md:gap-3 group">
-                      <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-50 rounded-2xl md:rounded-3xl flex items-center justify-center shadow-sm border border-blue-100 group-hover:bg-blue-100 transition-colors">
-                        <Upload className="w-7 h-7 md:w-8 md:h-8 text-blue-600" />
+                    <button 
+                      onClick={handleUploadClick}
+                      className="snap-start shrink-0 w-[110px] md:w-auto flex flex-col items-center gap-3 p-4 bg-white rounded-3xl md:rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group"
+                    >
+                      <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <Upload className="w-6 h-6" />
                       </div>
-                      <span className="text-xs md:text-sm font-semibold text-slate-700 text-center leading-tight">Upload<br/>Document</span>
+                      <span className="text-xs md:text-sm font-bold text-slate-700 text-center leading-tight">{t(language, 'uploadDocument')}</span>
+                      <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,image/*" />
                     </button>
 
-                    <button onClick={() => router.push("/documents")} className="flex flex-col items-center gap-2 md:gap-3 group">
-                      <div className="w-16 h-16 md:w-20 md:h-20 bg-orange-50 rounded-2xl md:rounded-3xl flex items-center justify-center shadow-sm border border-orange-100 group-hover:bg-orange-100 transition-colors">
-                        <FileText className="w-7 h-7 md:w-8 md:h-8 text-orange-600" />
+                    <button 
+                      onClick={() => router.push("/documents")}
+                      className="snap-start shrink-0 w-[110px] md:w-auto flex flex-col items-center gap-3 p-4 bg-white rounded-3xl md:rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group"
+                    >
+                      <div className="w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                        <FileText className="w-6 h-6" />
                       </div>
-                      <span className="text-xs md:text-sm font-semibold text-slate-700 text-center leading-tight">Document</span>
+                      <span className="text-xs md:text-sm font-bold text-slate-700 text-center leading-tight">{t(language, 'document')}</span>
                     </button>
 
-                    <button onClick={() => router.push("/find-centre")} className="flex flex-col items-center gap-2 md:gap-3 group">
-                      <div className="w-16 h-16 md:w-20 md:h-20 bg-rose-50 rounded-2xl md:rounded-3xl flex items-center justify-center shadow-sm border border-rose-100 group-hover:bg-rose-100 transition-colors">
-                        <MapPin className="w-7 h-7 md:w-8 md:h-8 text-rose-600" />
+                    <button 
+                      onClick={() => router.push("/find-centre")}
+                      className="snap-start shrink-0 w-[110px] md:w-auto flex flex-col items-center gap-3 p-4 bg-white rounded-3xl md:rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group"
+                    >
+                      <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center group-hover:bg-rose-600 group-hover:text-white transition-colors">
+                        <MapPin className="w-6 h-6" />
                       </div>
-                      <span className="text-xs md:text-sm font-semibold text-slate-700 text-center leading-tight">Find AYUSH<br/>Centre</span>
+                      <span className="text-xs md:text-sm font-bold text-slate-700 text-center leading-tight">{t(language, 'findAyushCentre')}</span>
                     </button>
+
                   </div>
                 </div>
 
                 {/* Family Members */}
                 <div className="px-6 md:px-0">
-                  <div className="flex justify-between items-center mb-4 md:mb-6">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xl md:text-2xl font-bold text-slate-900">Family Members</h2>
-                    </div>
-                  </div>
-
-                  <div className="flex md:flex-wrap gap-4 md:gap-6 overflow-x-auto hide-scrollbar pb-2">
-                    
+                  <h2 className="text-xl font-extrabold text-slate-900 mb-6 tracking-tight">{t(language, 'familyMembers')}</h2>
+                  
+                  <div className="flex flex-wrap gap-4 md:gap-6">
                     {familyMembers.map((member) => (
-                      <div key={member.id} className="flex flex-col items-center gap-2 shrink-0 group cursor-pointer">
-                        <div className={`w-14 h-14 md:w-16 md:h-16 font-bold text-xl md:text-2xl rounded-full flex items-center justify-center border-2 ${colorClasses[member.color] || colorClasses.green} group-hover:scale-105 transition-transform`}>
+                      <div key={member.id} className="flex flex-col items-center gap-2 cursor-pointer group">
+                        <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center text-xl md:text-2xl font-bold shadow-sm border-2 group-hover:scale-110 transition-transform ${colorClasses[member.color]}`}>
                           {member.initial}
                         </div>
-                        <span className="text-xs md:text-sm font-semibold text-slate-800 text-center leading-tight">
-                          {member.name}
-                          {member.relation === "You" && <><br/><span className="font-normal text-slate-500">(You)</span></>}
-                          {member.relation !== "You" && <><br/><span className="font-normal text-slate-500">{member.relation}</span></>}
-                        </span>
+                        <div className="text-center">
+                          <p className="text-xs md:text-sm font-bold text-slate-900 leading-none">{member.name}</p>
+                          <p className="text-[10px] md:text-xs font-medium text-slate-500 mt-1">{t(language, member.relation.toLowerCase())}</p>
+                        </div>
                       </div>
                     ))}
-
-                    <div className="flex flex-col items-center gap-2 shrink-0">
-                      <button onClick={() => setShowAddMember(true)} className="w-14 h-14 md:w-16 md:h-16 bg-white border-2 border-dashed border-slate-300 text-slate-400 rounded-full flex items-center justify-center hover:bg-slate-50 transition-colors">
-                        <Plus className="w-6 h-6" />
-                      </button>
-                      <span className="text-xs md:text-sm font-medium text-slate-600 mt-1 text-center">Add</span>
-                    </div>
+                    
+                    <button 
+                      onClick={() => setShowAddMember(true)}
+                      className="flex flex-col items-center gap-2 cursor-pointer group"
+                    >
+                      <div className="w-14 h-14 md:w-16 md:h-16 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-400 group-hover:border-emerald-500 group-hover:text-emerald-600 group-hover:bg-emerald-50 transition-all">
+                        <Plus className="w-6 h-6 md:w-8 md:h-8" />
+                      </div>
+                      <p className="text-xs md:text-sm font-bold text-slate-600 group-hover:text-emerald-700 mt-1">{t(language, 'add')}</p>
+                    </button>
                   </div>
                 </div>
 
