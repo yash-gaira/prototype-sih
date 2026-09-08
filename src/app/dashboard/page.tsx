@@ -27,6 +27,13 @@ export default function UserDashboard() {
   const [language, setLanguage] = useState<string>("en");
   const [userName, setUserName] = useState("Naman Mahra");
   const [aadhaarNumber, setAadhaarNumber] = useState("XXXX XXXX 1234");
+  const [nextAppt, setNextAppt] = useState({
+    date: "15",
+    monthYear: "SEP 2026",
+    doctor: "Dr. R. Verma",
+    dept: "Ayurveda",
+    time: "11:00 AM"
+  });
 
   useEffect(() => {
     const savedLang = localStorage.getItem("preferredLanguage");
@@ -41,6 +48,14 @@ export default function UserDashboard() {
         if (profile.name) setUserName(profile.name);
         if (profile.aadhaarNumber) setAadhaarNumber(profile.aadhaarNumber);
       } catch (e) {}
+    }
+
+    const apptRaw = localStorage.getItem("medikiosk_next_appointment");
+    if (apptRaw) {
+      try {
+        const appt = JSON.parse(apptRaw);
+        setNextAppt(appt);
+      } catch(e) {}
     }
   }, []);
 
@@ -317,22 +332,22 @@ export default function UserDashboard() {
                     
                     <div className="flex gap-4 md:gap-6 relative z-10 bg-emerald-900/40 p-4 rounded-2xl">
                       <div className="flex flex-col items-center justify-center pr-4 md:pr-6 border-r border-emerald-600/50">
-                        <span className="text-4xl md:text-5xl font-extrabold tracking-tighter">15</span>
-                        <span className="text-xs md:text-sm font-bold tracking-widest mt-1">SEP 2026</span>
+                        <span className="text-4xl md:text-5xl font-extrabold tracking-tighter">{nextAppt.date}</span>
+                        <span className="text-xs md:text-sm font-bold tracking-widest mt-1 uppercase">{nextAppt.monthYear}</span>
                       </div>
                       
                       <div className="flex flex-col justify-center gap-3">
                         <div className="flex items-start gap-3">
                           <User className="w-4 h-4 md:w-5 md:h-5 mt-0.5 text-emerald-200" />
                           <div>
-                            <p className="font-bold text-sm md:text-base leading-none">Dr. R. Verma</p>
-                            <p className="text-xs md:text-sm text-emerald-100 mt-1">Ayurveda OPD</p>
+                            <p className="font-bold text-sm md:text-base leading-none">{nextAppt.doctor}</p>
+                            <p className="text-xs md:text-sm text-emerald-100 mt-1">{nextAppt.dept} OPD</p>
                           </div>
                         </div>
                         <div className="flex items-start gap-3">
                           <Clock className="w-4 h-4 md:w-5 md:h-5 mt-0.5 text-emerald-200" />
                           <div>
-                            <p className="font-bold text-sm md:text-base leading-none">11:00 AM</p>
+                            <p className="font-bold text-sm md:text-base leading-none">{nextAppt.time}</p>
                           </div>
                         </div>
                       </div>

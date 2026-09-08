@@ -65,6 +65,16 @@ export default function BookAppointment() {
   };
 
   const handleConfirm = () => {
+    // Save to localStorage
+    const appointmentDetails = {
+      doctor: selectedDoctor?.name || 'Dr. R. Verma',
+      dept: selectedDept?.name || 'Ayurveda',
+      date: selectedDate?.date || '15',
+      monthYear: 'SEP 2026', // Hardcoded for prototype or derive from date
+      time: selectedTime || '11:00 AM'
+    };
+    localStorage.setItem("medikiosk_next_appointment", JSON.stringify(appointmentDetails));
+
     setCurrentStep("SUCCESS");
     setTimeout(() => {
       router.push("/dashboard");
