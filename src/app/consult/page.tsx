@@ -46,6 +46,23 @@ export default function ConsultPage() {
     scrollToBottom();
   }, [messages, isLoading]);
 
+  useEffect(() => {
+    // Set initial greeting based on selected language
+    const lang = localStorage.getItem("medikiosk_language");
+    if (lang && lang !== "English") {
+      let translatedGreeting = "Hello! Where are you experiencing the pain or discomfort today?";
+      if (lang === "Hindi") translatedGreeting = "नमस्ते! आज आपको कहाँ दर्द या परेशानी हो रही है?";
+      else if (lang === "Bengali") translatedGreeting = "নমস্কার! আজ আপনার কোথায় ব্যথা বা অস্বস্তি হচ্ছে?";
+      else if (lang === "Marathi") translatedGreeting = "नमस्कार! आज तुम्हाला कुठे त्रास किंवा वेदना होत आहे?";
+      else if (lang === "Gujarati") translatedGreeting = "નમસ્તે! આજે તમને ક્યાં દુખાવો અથવા તકલીફ થઈ રહી છે?";
+      else if (lang === "Tamil") translatedGreeting = "வணக்கம்! இன்று உங்களுக்கு எங்கு வலி அல்லது அசௌகரியம் உள்ளது?";
+      else if (lang === "Telugu") translatedGreeting = "నమస్కారం! ఈరోజు మీకు ఎక్కడ నొప్పి లేదా అసౌకర్యంగా ఉంది?";
+      else translatedGreeting = `Hello! Please describe your symptoms in ${lang}.`;
+      
+      setMessages([{ role: 'ai', text: translatedGreeting }]);
+    }
+  }, []);
+
   // Use the internal Next.js API route to avoid CORS and securely handle keys
   const callGroqAPI = async (chatMessages: {role: 'ai' | 'user', text: string}[]): Promise<string> => {
     const formattedMessages = chatMessages.map(msg => ({
@@ -54,12 +71,16 @@ export default function ConsultPage() {
     }));
     
     let patientContext = "";
+    let langContext = "English";
     try {
       const storedProfile = localStorage.getItem("medikiosk_patient_profile");
       if (storedProfile) {
         const profile = JSON.parse(storedProfile);
         patientContext = `The patient's name is ${profile.name || 'Unknown'}, DOB is ${profile.dob || 'Unknown'}, Gender is ${profile.gender || 'Unknown'}. Greet them by name and be aware of their age/gender if it is relevant. `;
       }
+      
+      const savedLang = localStorage.getItem("medikiosk_language");
+      if (savedLang) langContext = savedLang;
     } catch(e) {}
 
     // Add a system prompt for behavior
@@ -70,7 +91,8 @@ ${patientContext}
 Your goals:
 1. Ask ONE brief, empathetic follow-up question at a time to understand their symptoms.
 2. If the patient mentions severe or red-flag symptoms (e.g., chest pain, stroke signs, severe bleeding, sudden loss of vision, unbearable pain, difficulty breathing), you MUST prepend your response with the exact tag: [CRITICAL]
-3. Keep language very simple, accessible, and suitable for elderly patients. Do not give medical diagnoses, only gather information.`
+3. Keep language very simple, accessible, and suitable for elderly patients. Do not give medical diagnoses, only gather information.
+4. CRITICAL: You MUST communicate EXCLUSIVELY in ${langContext}. All your responses must be written in the ${langContext} script. Never use English unless the patient specifically asks for it.`
     });
 
     const response = await fetch("/api/chat", {

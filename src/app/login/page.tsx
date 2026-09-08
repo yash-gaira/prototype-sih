@@ -62,7 +62,10 @@ export default function LoginScreen() {
             key={lang.code}
             size="lg" 
             variant="outline"
-            onClick={() => setLanguage(lang.code)}
+            onClick={() => {
+              setLanguage(lang.code);
+              localStorage.setItem('medikiosk_language', lang.name);
+            }}
             className="w-full text-lg flex justify-between px-6 py-6 h-auto border-2 border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e] transition-all"
           >
             <span className="font-bold">{lang.native}</span>
@@ -77,7 +80,10 @@ export default function LoginScreen() {
               <Button 
                 key={lang.code}
                 variant="outline"
-                onClick={() => setLanguage(lang.code)}
+                onClick={() => {
+                  setLanguage(lang.code);
+                  localStorage.setItem('medikiosk_language', lang.name);
+                }}
                 className="w-full flex flex-col items-center justify-center py-4 h-auto border-2 border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e] transition-all"
               >
                 <span className="font-bold">{lang.native}</span>
