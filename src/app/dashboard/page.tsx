@@ -49,6 +49,7 @@ export default function UserDashboard() {
         const profile = JSON.parse(profileRaw);
         if (profile.name) setUserName(profile.name);
         if (profile.aadhaarNumber) setAadhaarNumber(profile.aadhaarNumber);
+        else if (profile.phoneNumber) setAadhaarNumber(profile.phoneNumber);
       } catch (e) {}
     }
 
@@ -64,16 +65,6 @@ export default function UserDashboard() {
     if (familyRaw) {
       try {
         setFamilyMembers(JSON.parse(familyRaw));
-      } catch(e) {}
-    }
-
-    const profileRaw = localStorage.getItem("medikiosk_patient_profile");
-    if (profileRaw) {
-      try {
-        const profile = JSON.parse(profileRaw);
-        if (profile.name) setUserName(profile.name);
-        if (profile.aadhaarNumber) setAadhaarNumber(profile.aadhaarNumber);
-        else if (profile.phoneNumber) setAadhaarNumber(profile.phoneNumber);
       } catch(e) {}
     }
   }, []);
