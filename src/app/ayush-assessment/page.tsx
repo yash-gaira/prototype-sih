@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, CheckCircle2, Activity, Moon, Utensils, Droplets, ActivitySquare, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Activity, Moon, Utensils, Droplets, ActivitySquare, AlertTriangle, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Phase = "basic" | "lifestyle" | "core";
@@ -58,7 +58,8 @@ export default function AyushAssessmentPage() {
     setTimeout(() => {
       localStorage.setItem("ayush_assessment_data", JSON.stringify(formData));
       setIsSubmitting(false);
-      router.push("/doctor-dashboard");
+      alert("Assessment Submitted Successfully! Your data has been securely saved for the doctor.");
+      router.push("/dashboard");
     }, 1500);
   };
 
@@ -176,6 +177,33 @@ export default function AyushAssessmentPage() {
           <input value={formData.dinacarya} onChange={(e) => handleChange("dinacarya", e.target.value)} className="w-full p-4 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none" placeholder="E.g., Irregular meals, late sleeping" />
         </div>
       </div>
+
+      {/* Ayurvedic Glossary FAQ */}
+      <div className="mt-8 pt-6 border-t border-slate-200">
+        <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4">
+          <Info className="w-5 h-5 text-emerald-600" />
+          Term Glossary (FAQ)
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <h4 className="font-bold text-emerald-900 text-sm">Prakriti</h4>
+            <p className="text-xs text-slate-600 mt-1">Your natural, inherent physical and mental constitution (Vata, Pitta, Kapha).</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <h4 className="font-bold text-emerald-900 text-sm">Vikruti</h4>
+            <p className="text-xs text-slate-600 mt-1">The current state of imbalance or disease in your body compared to your natural state.</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <h4 className="font-bold text-emerald-900 text-sm">Agni</h4>
+            <p className="text-xs text-slate-600 mt-1">The digestive fire or metabolic processes. Weak (Manda) or irregular (Visham) agni leads to toxins.</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <h4 className="font-bold text-emerald-900 text-sm">Dinacarya</h4>
+            <p className="text-xs text-slate-600 mt-1">Your daily routine, including sleep schedule, eating habits, and hygiene practices.</p>
+          </div>
+        </div>
+      </div>
+
     </motion.div>
   );
 
