@@ -9,6 +9,7 @@ export default function AppointmentDetailsScreen() {
   
   const [appt, setAppt] = useState({
     date: "15 Sep",
+    monthYear: "2026",
     time: "11:00 AM",
     doctor: "Dr. R. Verma",
     dept: "Ayurveda"
@@ -21,6 +22,7 @@ export default function AppointmentDetailsScreen() {
         const parsed = JSON.parse(raw);
         setAppt({
           date: parsed.date || "15 Sep",
+          monthYear: parsed.monthYear || "2026",
           time: parsed.time || "11:00 AM",
           doctor: parsed.doctor || "Dr. R. Verma",
           dept: parsed.dept || "Ayurveda"
@@ -54,7 +56,7 @@ export default function AppointmentDetailsScreen() {
               <div className="flex justify-between items-start mb-6">
                  <div>
                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Date</p>
-                   <p className="text-2xl font-black text-slate-900">{appt.date}</p>
+                   <p className="text-2xl font-black text-slate-900">{appt.date} {appt.monthYear && <span className="text-sm font-bold text-slate-500">{appt.monthYear}</span>}</p>
                  </div>
                  <div className="text-right">
                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Time</p>

@@ -106,12 +106,15 @@ export default function BookAppointment() {
   };
 
   const handleConfirm = () => {
-    // Save to localStorage
+    const dateStr = selectedDate?.date || '15 Sep';
+    const dayNum = dateStr.split(' ')[0];
+    const month = dateStr.split(' ')[1] || 'SEP';
+    
     const appointmentDetails = {
       doctor: selectedDoctor?.name || 'Dr. R. Verma',
       dept: selectedDept?.name || 'Ayurveda',
-      date: selectedDate?.date || '15',
-      monthYear: 'SEP 2026', // Hardcoded for prototype or derive from date
+      date: dayNum,
+      monthYear: `${month.toUpperCase()} 2026`,
       time: selectedTime || '11:00 AM'
     };
     localStorage.setItem("medikiosk_next_appointment", JSON.stringify(appointmentDetails));
