@@ -186,6 +186,7 @@ export default function LoginScreen() {
 
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
+  const [userNameInput, setUserNameInput] = useState("");
   const [confirmationResult, setConfirmationResult] = useState<any>(null);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
@@ -231,12 +232,17 @@ export default function LoginScreen() {
       alert("Please enter the 6-digit OTP");
       return;
     }
+    if (!userNameInput.trim()) {
+      alert("Please enter your name");
+      return;
+    }
     setIsVerifyingOtp(true);
     try {
       const result = await confirmationResult.confirm(otp);
       
       // Save minimal profile
       localStorage.setItem("medikiosk_patient_profile", JSON.stringify({
+        name: userNameInput.trim(),
         phoneNumber: result.user.phoneNumber,
         authMethod: 'phone'
       }));
@@ -387,7 +393,14 @@ export default function LoginScreen() {
                 </>
               ) : (
                 <>
-                  <div className="relative">
+                  <div className="relative flex flex-col gap-4">
+                    <input 
+                      type="text"
+                      value={userNameInput}
+                      onChange={(e) => setUserNameInput(e.target.value)}
+                      placeholder="Enter your Full Name"
+                      className="w-full p-4 text-center text-lg font-bold bg-white border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-[#0f4b3e] focus:ring-4 focus:ring-emerald-100 transition-all shadow-sm"
+                    />
                     <input 
                       type="text"
                       value={otp}
@@ -396,7 +409,7 @@ export default function LoginScreen() {
                       className="w-full p-4 text-center tracking-widest text-lg font-bold bg-white border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-[#0f4b3e] focus:ring-4 focus:ring-emerald-100 transition-all shadow-sm"
                     />
                   </div>
-                  <Button onClick={handleVerifyOtp} disabled={isVerifyingOtp || otp.length !== 6} className="w-full py-6 text-lg font-bold bg-[#0f4b3e] hover:bg-emerald-800 text-white rounded-2xl shadow-lg">
+                  <Button onClick={handleVerifyOtp} disabled={isVerifyingOtp || otp.length !== 6 || !userNameInput.trim()} className="w-full py-6 text-lg font-bold bg-[#0f4b3e] hover:bg-emerald-800 text-white rounded-2xl shadow-lg">
                     {isVerifyingOtp ? "Verifying..." : "Verify & Login"} <ChevronRight className="w-5 h-5 ml-2" />
                   </Button>
                 </>

@@ -66,6 +66,16 @@ export default function UserDashboard() {
         setFamilyMembers(JSON.parse(familyRaw));
       } catch(e) {}
     }
+
+    const profileRaw = localStorage.getItem("medikiosk_patient_profile");
+    if (profileRaw) {
+      try {
+        const profile = JSON.parse(profileRaw);
+        if (profile.name) setUserName(profile.name);
+        if (profile.aadhaarNumber) setAadhaarNumber(profile.aadhaarNumber);
+        else if (profile.phoneNumber) setAadhaarNumber(profile.phoneNumber);
+      } catch(e) {}
+    }
   }, []);
 
   const [notifications, setNotifications] = useState([
