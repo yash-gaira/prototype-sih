@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { t } from "@/lib/translations";
 import { db, auth } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
+import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -150,7 +151,6 @@ export default function LoginScreen() {
 
   const setupRecaptcha = () => {
     if (!(window as any).recaptchaVerifier) {
-      const { RecaptchaVerifier } = require('firebase/auth');
       (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         'size': 'invisible',
       });
@@ -165,7 +165,6 @@ export default function LoginScreen() {
     setIsSendingOtp(true);
     try {
       setupRecaptcha();
-      const { signInWithPhoneNumber } = require('firebase/auth');
       const appVerifier = (window as any).recaptchaVerifier;
       const formattedNumber = `+91${phoneNumber}`;
       
