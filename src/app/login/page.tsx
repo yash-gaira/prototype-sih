@@ -356,7 +356,7 @@ export default function LoginScreen() {
               </div>
               <span className="font-bold">{t(language, 'aadhaarOtp')}</span>
             </div>
-            <input type="file" accept="image/*" capture="environment" className="hidden" ref={aadhaarInputRef} onChange={handleAadhaarUpload} />
+            <input type="file" accept="image/*" className="hidden" ref={aadhaarInputRef} onChange={handleAadhaarUpload} />
           </Button>
         </div>
 
