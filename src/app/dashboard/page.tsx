@@ -294,11 +294,11 @@ export default function UserDashboard() {
               </div>
               <button 
                 onClick={() => router.push("/ayush-assessment")} 
-                className="hidden md:flex items-center justify-between mt-2 w-24 h-9 bg-emerald-500 rounded-full p-1 cursor-pointer hover:bg-emerald-600 transition-colors shadow-inner"
+                className="hidden md:flex items-center mt-2 w-24 h-9 bg-slate-300 rounded-full p-1 cursor-pointer hover:bg-slate-400 transition-colors shadow-inner"
                 title="AYUSH Assessment"
               >
-                <span className="text-xs font-bold text-white ml-2 tracking-wide">AYUSH</span>
-                <div className="w-7 h-7 bg-white rounded-full shadow-sm" />
+                <div className="w-7 h-7 bg-white rounded-full shadow-sm shrink-0" />
+                <span className="text-xs font-bold text-slate-600 ml-2 tracking-wide">AYUSH</span>
               </button>
             </div>
           </header>
