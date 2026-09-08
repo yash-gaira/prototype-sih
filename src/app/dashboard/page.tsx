@@ -25,11 +25,22 @@ import { t } from "@/lib/translations";
 export default function UserDashboard() {
   const router = useRouter();
   const [language, setLanguage] = useState<string>("en");
+  const [userName, setUserName] = useState("Naman Mahra");
+  const [aadhaarNumber, setAadhaarNumber] = useState("XXXX XXXX 1234");
 
   useEffect(() => {
     const savedLang = localStorage.getItem("preferredLanguage");
     if (savedLang) {
       setLanguage(savedLang);
+    }
+
+    const profileRaw = localStorage.getItem("medikiosk_patient_profile");
+    if (profileRaw) {
+      try {
+        const profile = JSON.parse(profileRaw);
+        if (profile.name) setUserName(profile.name);
+        if (profile.aadhaarNumber) setAadhaarNumber(profile.aadhaarNumber);
+      } catch (e) {}
     }
   }, []);
 
@@ -167,7 +178,7 @@ export default function UserDashboard() {
               </div>
               <div>
                 <p className="text-sm md:text-base text-slate-500 font-medium">{t(language, 'goodMorning')},</p>
-                <h1 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">Naman Mahra</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">{userName}</h1>
                 <p className="text-xs md:text-sm text-slate-500 mt-0.5">{t(language, 'yourHealthOurPriority')}</p>
               </div>
             </div>
@@ -199,7 +210,7 @@ export default function UserDashboard() {
                       </div>
                       <div>
                         <p className="text-sm md:text-base font-bold text-emerald-900">{t(language, 'myHealthId')}</p>
-                        <p className="text-lg md:text-2xl font-bold text-emerald-900 tracking-widest my-0.5">XXXX XXXX 1234</p>
+                        <p className="text-lg md:text-2xl font-bold text-emerald-900 tracking-widest my-0.5">{aadhaarNumber}</p>
                         <p className="text-xs md:text-sm text-emerald-700">{t(language, 'viewManageProfile')}</p>
                       </div>
                     </div>
