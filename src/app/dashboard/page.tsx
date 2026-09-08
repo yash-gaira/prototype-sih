@@ -189,9 +189,9 @@ export default function UserDashboard() {
                   3
                 </span>
               </div>
-              <div className="hidden md:flex items-center mt-2">
+              <button onClick={() => router.push("/ayush-assessment")} className="hidden md:flex items-center mt-2 cursor-pointer hover:scale-105 transition-transform">
                 <img src="/ayush-logo.jpg" alt="Ministry of Ayush" className="h-12 object-contain" />
-              </div>
+              </button>
             </div>
           </header>
 
