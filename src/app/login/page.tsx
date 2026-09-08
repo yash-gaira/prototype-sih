@@ -107,12 +107,15 @@ export default function LoginScreen() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ imageBase64: base64 })
         });
-        if (!res.ok) throw new Error("OCR Failed");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "OCR Failed");
+        }
         const data = await res.json();
         setAadhaarDetails(data);
-      } catch (err) {
-        console.error("Failed to extract Aadhaar details", err);
-        alert("Could not extract details. Please try again with a clearer photo.");
+      } catch (err: any) {
+        console.error("OCR Error:", err);
+        alert(`Aadhaar Scan Error: ${err.message || "Please try again with a clearer photo."}`);
       } finally {
         setIsLoadingOCR(false);
       }
@@ -170,9 +173,16 @@ export default function LoginScreen() {
       
       const confirmation = await signInWithPhoneNumber(auth, formattedNumber, appVerifier);
       setConfirmationResult(confirmation);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error sending OTP", err);
-      alert("Failed to send OTP. Please try again.");
+      // Firebase throws specific error codes like auth/billing-not-enabled
+      if (err.code === 'auth/billing-not-enabled') {
+        alert("Firebase Billing Not Enabled: Please upgrade your Firebase project to the Blaze plan to send SMS OTPs.");
+      } else if (err.code === 'auth/network-request-failed') {
+        alert("Network Error: Please turn OFF Brave Shields or Adblockers to allow reCAPTCHA to load.");
+      } else {
+        alert(`Failed to send OTP: ${err.message || "Unknown error"}`);
+      }
     } finally {
       setIsSendingOtp(false);
     }
