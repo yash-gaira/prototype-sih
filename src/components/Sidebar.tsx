@@ -1,18 +1,31 @@
 import React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Home, Clock, Calendar, FileText, Sparkles } from "lucide-react";
 import { t } from "@/lib/translations";
 
 export default function Sidebar() {
   const router = useRouter();
+  const pathname = usePathname();
   
-  // We can just read the language from localStorage if we are in client, but since it's a quick fix, let's keep it simple
   const [language, setLanguage] = React.useState<string>("en");
   
   React.useEffect(() => {
     const savedLang = localStorage.getItem("preferredLanguage");
     if (savedLang) setLanguage(savedLang);
   }, []);
+
+  const isActive = (path: string) => {
+    if (path === '/history') {
+        return pathname === '/history' || pathname.startsWith('/history/');
+    }
+    return pathname === path || pathname.startsWith(path + '/');
+  };
+
+  const getButtonClass = (path: string) => {
+    return isActive(path)
+      ? "flex items-center gap-3 w-full px-4 py-3 bg-[#0f4b3e] text-white rounded-xl font-bold shadow-md shadow-emerald-900/10 transition-transform scale-[1.02]"
+      : "flex items-center gap-3 w-full px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition-colors";
+  };
 
   return (
     <aside className="hidden md:flex w-64 bg-slate-50 border-r border-slate-200 flex-col py-8 px-4 justify-between shrink-0">
@@ -28,19 +41,19 @@ export default function Sidebar() {
         </div>
         
         <nav className="space-y-2">
-          <button onClick={() => router.push("/dashboard")} className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
+          <button onClick={() => router.push("/dashboard")} className={getButtonClass("/dashboard")}>
             <Home className="w-5 h-5" /> {t(language, 'dashboard')}
           </button>
-          <button onClick={() => router.push("/history")} className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
+          <button onClick={() => router.push("/history")} className={getButtonClass("/history")}>
             <Clock className="w-5 h-5" /> {t(language, 'history')}
           </button>
-          <button onClick={() => router.push("/history")} className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
+          <button onClick={() => router.push("/history")} className={getButtonClass("/upcoming-visits")}>
             <Calendar className="w-5 h-5" /> {t(language, 'upcomingVisits')}
           </button>
-          <button onClick={() => router.push("/documents")} className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
+          <button onClick={() => router.push("/documents")} className={getButtonClass("/documents")}>
             <FileText className="w-5 h-5" /> {t(language, 'documents')}
           </button>
-          <button onClick={() => router.push("/ai-summary")} className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
+          <button onClick={() => router.push("/ai-summary")} className={getButtonClass("/ai-summary")}>
             <Sparkles className="w-5 h-5" /> {t(language, 'aiSummary')}
           </button>
         </nav>

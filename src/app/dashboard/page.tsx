@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Sidebar from "@/components/Sidebar";
 import { 
   Bell, 
   User, 
@@ -146,42 +147,7 @@ export default function UserDashboard() {
       <div className="w-full max-w-md md:max-w-6xl md:w-full bg-white sm:rounded-3xl relative shadow-2xl overflow-hidden border-x border-slate-200 sm:border-y flex flex-col md:flex-row min-h-[100dvh] md:min-h-[800px]">
         
         {/* Desktop Sidebar Navigation */}
-        <aside className="hidden md:flex w-64 bg-slate-50 border-r border-slate-200 flex-col py-8 px-4 justify-between shrink-0">
-          <div>
-            <div className="flex items-center gap-3 px-4 mb-12">
-               <div className="w-10 h-10 bg-white shadow-sm border border-slate-200 rounded-xl flex items-center justify-center">
-                 <span className="text-xl">🌿</span>
-               </div>
-               <span className="text-xl font-extrabold text-slate-900 tracking-tight">MediKiosk</span>
-            </div>
-            
-            <nav className="space-y-2">
-              <button className="flex items-center gap-3 w-full px-4 py-3 bg-[#0f4b3e] text-white rounded-xl font-bold shadow-md shadow-emerald-900/10 transition-transform hover:scale-[1.02]">
-                <Home className="w-5 h-5" /> {t(language, 'dashboard')}
-              </button>
-              <button onClick={() => router.push("/history")} className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
-                <Clock className="w-5 h-5" /> {t(language, 'history')}
-              </button>
-              <button onClick={() => router.push("/history")} className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
-                <Calendar className="w-5 h-5" /> {t(language, 'upcomingVisits')}
-              </button>
-              <button onClick={() => router.push("/documents")} className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
-                <FileText className="w-5 h-5" /> {t(language, 'documents')}
-              </button>
-              <button onClick={() => router.push("/ai-summary")} className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
-                <Sparkles className="w-5 h-5" /> {t(language, 'aiSummary')}
-              </button>
-            </nav>
-          </div>
-          
-          <button 
-            onClick={() => router.push("/consult")} 
-            className="flex items-center justify-center gap-3 w-full px-4 py-4 bg-blue-600 text-white shadow-lg hover:bg-blue-700 rounded-2xl font-bold transition-all hover:-translate-y-1"
-          >
-             <Sparkles className="w-5 h-5" />
-             {t(language, 'aiTriage')}
-          </button>
-        </aside>
+        <Sidebar />
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col h-full overflow-y-auto pb-24 md:pb-8 relative">
