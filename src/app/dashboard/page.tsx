@@ -314,7 +314,7 @@ export default function UserDashboard() {
               </div>
               <button 
                 onClick={() => router.push("/ayush-assessment")} 
-                className="hidden md:flex items-center mt-2 w-24 h-9 bg-slate-300 rounded-full p-1 cursor-pointer hover:bg-slate-400 transition-colors shadow-inner"
+                className="flex items-center mt-2 w-24 h-9 bg-slate-300 rounded-full p-1 cursor-pointer hover:bg-slate-400 transition-colors shadow-inner"
                 title="AYUSH Assessment"
               >
                 <div className="w-7 h-7 bg-white rounded-full shadow-sm shrink-0" />
