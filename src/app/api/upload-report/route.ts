@@ -18,11 +18,14 @@ export async function POST(req: Request) {
     // 1. EXTRACT TEXT (WITH 2 SECOND TIMEOUT FOR QUICK DEMO)
     const extractPromise = async () => {
       if (file.type === "application/pdf") {
-        const pdf = require("pdf-parse/lib/pdf-parse.js");
+        // Hide require from Turbopack bundler
+        const req = eval('require');
+        const pdf = req("pdf-parse");
         const pdfData = await pdf(buffer);
         return pdfData.text;
       } else if (file.type.startsWith("image/")) {
-        const Tesseract = require("tesseract.js");
+        const req = eval('require');
+        const Tesseract = req("tesseract.js");
         const { data: { text } } = await Tesseract.recognize(buffer, "eng");
         return text;
       } else {
