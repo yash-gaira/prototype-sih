@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { storeDocumentChunks } from "@/lib/embeddings";
-import Tesseract from "tesseract.js";
 
 export async function POST(req: Request) {
   try {
@@ -22,6 +21,7 @@ export async function POST(req: Request) {
       const pdfData = await pdf(buffer);
       extractedText = pdfData.text;
     } else if (file.type.startsWith("image/")) {
+      const Tesseract = require("tesseract.js");
       const { data: { text } } = await Tesseract.recognize(buffer, "eng");
       extractedText = text;
     } else {

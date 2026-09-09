@@ -1,5 +1,4 @@
-import { pipeline } from '@xenova/transformers';
-
+// Removed top-level import of @xenova/transformers to prevent Vercel 500 crashes
 export interface DocumentChunk {
   id: string;
   sessionId: string;
@@ -14,8 +13,14 @@ let embeddingPipeline: any = null;
 
 export async function getEmbeddingPipeline() {
   if (!embeddingPipeline) {
-    // Load the pipeline - using Xenova/all-MiniLM-L6-v2 which is standard for RAG
-    embeddingPipeline = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+    try {
+      // Dynamically import to prevent crashing the entire route on Vercel
+      const transformers = await import('@xenova/transformers');
+      embeddingPipeline = await transformers.pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+    } catch (e) {
+      console.warn("Could not load @xenova/transformers, falling back.", e);
+      throw e;
+    }
   }
   return embeddingPipeline;
 }
