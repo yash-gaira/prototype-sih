@@ -49,15 +49,21 @@ export const updateAppointmentStatus = async (appointmentId: string, status: str
 export const listenToDoctorQueue = (callback: (queue: any[]) => void) => {
   const q = query(
     collection(db, "appointments"), 
-    where("doctorId", "==", DOCTOR_ID),
-    orderBy("createdAt", "desc")
+    where("doctorId", "==", DOCTOR_ID)
   );
 
   return onSnapshot(q, (querySnapshot) => {
     const queue = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
+    })) as any[];
+    
+    queue.sort((a, b) => {
+      const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return timeB - timeA;
+    });
+    
     callback(queue);
   }, (error) => {
     console.error("Listen to queue error: ", error);
@@ -67,15 +73,21 @@ export const listenToDoctorQueue = (callback: (queue: any[]) => void) => {
 export const listenToPatientAppointments = (callback: (appts: any[]) => void) => {
   const q = query(
     collection(db, "appointments"), 
-    where("patientId", "==", PATIENT_ID),
-    orderBy("createdAt", "desc")
+    where("patientId", "==", PATIENT_ID)
   );
 
   return onSnapshot(q, (querySnapshot) => {
     const appts = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
+    })) as any[];
+    
+    appts.sort((a, b) => {
+      const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return timeB - timeA;
+    });
+    
     callback(appts);
   }, (error) => {
     console.error("Listen to patient appts error: ", error);

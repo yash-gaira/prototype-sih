@@ -62,6 +62,15 @@ export default function UserDashboard() {
         }
       );
     }
+    
+    // Initialize nextAppt from local storage immediately so it shows instantly
+    const apptRaw = localStorage.getItem("medikiosk_next_appointment");
+    if (apptRaw) {
+      try {
+        const appt = JSON.parse(apptRaw);
+        setNextAppt(appt);
+      } catch(e) {}
+    }
 
     const unsubscribe = listenToPatientAppointments((appts) => {
       if (appts && appts.length > 0) {
