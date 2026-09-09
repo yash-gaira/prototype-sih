@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { storeDocumentChunks } from "@/lib/embeddings";
-import pdf from "pdf-parse";
 import Tesseract from "tesseract.js";
+// Use require for CommonJS module compatibility in Turbopack
+const pdf = require("pdf-parse");
 
 export async function POST(req: Request) {
   try {
