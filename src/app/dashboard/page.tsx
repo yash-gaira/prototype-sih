@@ -399,10 +399,10 @@ export default function UserDashboard() {
                           </button>
                         )}
                         <button className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center text-xl md:text-2xl font-bold ${colorClasses[member.color]} border-2`}>
-                          {member.initial}
+                          {member.relation.toLowerCase() === 'you' ? userName.charAt(0).toUpperCase() : member.initial}
                         </button>
                         <div className="text-center">
-                          <p className="text-xs md:text-sm font-bold text-slate-800">{member.name}</p>
+                          <p className="text-xs md:text-sm font-bold text-slate-800">{member.relation.toLowerCase() === 'you' ? userName.split(' ')[0] : member.name}</p>
                           <p className="text-[10px] md:text-xs text-slate-500 capitalize">{member.relation}</p>
                         </div>
                       </div>
