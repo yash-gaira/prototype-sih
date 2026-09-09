@@ -17,7 +17,7 @@ import {
   Plus
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { listenToDoctorQueue, updateAppointmentStatus } from "@/lib/firestoreService";
+import { listenToDoctorQueue, updateAppointmentStatus, uploadDocumentRecord } from "@/lib/firestoreService";
 
 export default function DoctorDashboardScreen() {
   const router = useRouter();
@@ -50,6 +50,11 @@ export default function DoctorDashboardScreen() {
 
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  
+  // States for FAB (Prescription)
+  const [prescPatient, setPrescPatient] = useState("");
+  const [prescNote, setPrescNote] = useState("");
+  const [prescStatus, setPrescStatus] = useState<"idle" | "saving" | "success">("idle");
 
   // Close modals on escape
   useEffect(() => {
@@ -266,41 +271,186 @@ export default function DoctorDashboardScreen() {
 
         {/* Dynamic Action Modals */}
         {activeModal && (
-          <div className="absolute inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="absolute inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm md:p-4">
             <motion.div
-              initial={{ y: 50, opacity: 0 }}
+              initial={{ y: "100%", opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl"
+              className="bg-white w-full md:max-w-md rounded-t-3xl md:rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-slate-800 capitalize">
                   {activeModal === 'schedule' && "My Schedule"}
                   {activeModal === 'reports' && "Reports & Analytics"}
-                  {activeModal === 'centre' && "AYUSH Centre"}
+                  {activeModal === 'centre' && "AYUSH Centre Info"}
                   {activeModal === 'queue' && "Full Patient Queue"}
-                  {activeModal === 'fab' && "New Prescription"}
+                  {activeModal === 'fab' && "New Prescription / Note"}
                 </h2>
-                <button onClick={() => setActiveModal(null)} className="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full text-slate-500 font-bold">✕</button>
+                <button onClick={() => { setActiveModal(null); setPrescStatus("idle"); }} className="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full text-slate-500 font-bold hover:bg-slate-200">✕</button>
               </div>
-              <div className="h-64 flex flex-col items-center justify-center text-center">
-                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mb-4 border border-slate-100">
-                  {activeModal === 'schedule' && <Calendar className="w-8 h-8" />}
-                  {activeModal === 'reports' && <BarChart2 className="w-8 h-8" />}
-                  {activeModal === 'centre' && <Building2 className="w-8 h-8" />}
-                  {activeModal === 'queue' && <Users className="w-8 h-8" />}
-                  {activeModal === 'fab' && <Plus className="w-8 h-8" />}
+
+              {activeModal === 'queue' && (
+                <div className="space-y-4">
+                  {queue.length === 0 ? (
+                    <p className="text-center text-slate-500 py-8">No patients in queue.</p>
+                  ) : (
+                    queue.map((patient) => (
+                      <div key={patient.id} className="p-4 border border-slate-100 rounded-2xl flex justify-between items-center bg-slate-50">
+                        <div>
+                          <p className="font-bold text-slate-900">{patient.name}</p>
+                          <p className="text-xs text-slate-500">{patient.time}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase ${patient.color}`}>
+                            {patient.status}
+                          </span>
+                          <button onClick={() => { setActiveModal(null); router.push('/doctor-workspace'); }} className="text-xs font-bold text-blue-600 hover:underline">
+                            Workspace
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
-                <p className="text-slate-600 font-medium mb-1">This module is part of the full MedKiosk system.</p>
-                <p className="text-xs text-slate-400 max-w-[250px]">
-                  For this SIH prototype, please use the core RAG and Triage features.
-                </p>
-                <button
-                  onClick={() => setActiveModal(null)}
-                  className="mt-6 px-6 py-2.5 bg-[#0D5C46] text-white rounded-xl text-sm font-bold shadow-md shadow-emerald-900/20 active:scale-95 transition-all"
-                >
-                  Got it
-                </button>
-              </div>
+              )}
+
+              {activeModal === 'schedule' && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                    <button className="text-blue-700 font-bold">&lt;</button>
+                    <p className="font-bold text-blue-900">September 2026</p>
+                    <button className="text-blue-700 font-bold">&gt;</button>
+                  </div>
+                  <div className="grid grid-cols-5 gap-2 text-center">
+                    {["Mon", "Tue", "Wed", "Thu", "Fri"].map((day, i) => (
+                      <div key={day} className={`p-2 rounded-xl ${i === 2 ? 'bg-[#0D5C46] text-white shadow-md' : 'bg-slate-50 text-slate-500'}`}>
+                        <p className="text-xs font-medium">{day}</p>
+                        <p className={`text-lg font-bold ${i === 2 ? 'text-white' : 'text-slate-800'}`}>{14 + i}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="space-y-3 mt-4">
+                    <h4 className="font-bold text-slate-800 text-sm">Upcoming Slots</h4>
+                    {['09:00 AM - 4 Patients', '11:00 AM - 2 Patients', '02:00 PM - 5 Patients'].map(slot => (
+                      <div key={slot} className="p-3 border border-slate-100 rounded-xl flex items-center gap-3">
+                        <Clock className="w-5 h-5 text-[#0D5C46]" />
+                        <span className="font-medium text-slate-700 text-sm">{slot}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeModal === 'reports' && (
+                <div className="space-y-6">
+                  <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 text-center">
+                    <p className="text-sm text-emerald-800 font-medium">Average Wait Time</p>
+                    <p className="text-3xl font-black text-emerald-950 mt-1">14 mins</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-800 text-sm mb-3">Status Breakdown</h4>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex justify-between text-xs font-medium mb-1"><span className="text-slate-600">Completed</span><span className="text-emerald-600">45%</span></div>
+                        <div className="w-full bg-slate-100 rounded-full h-2"><div className="bg-emerald-500 h-2 rounded-full" style={{ width: '45%' }}></div></div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-xs font-medium mb-1"><span className="text-slate-600">Waiting</span><span className="text-blue-600">35%</span></div>
+                        <div className="w-full bg-slate-100 rounded-full h-2"><div className="bg-blue-500 h-2 rounded-full" style={{ width: '35%' }}></div></div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-xs font-medium mb-1"><span className="text-slate-600">In Progress</span><span className="text-orange-600">20%</span></div>
+                        <div className="w-full bg-slate-100 rounded-full h-2"><div className="bg-orange-500 h-2 rounded-full" style={{ width: '20%' }}></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeModal === 'centre' && (
+                <div className="text-center py-6">
+                  <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-orange-100">
+                    <Building2 className="w-10 h-10 text-orange-600" />
+                  </div>
+                  <h3 className="font-bold text-xl text-slate-900">Dehradun Main AYUSH</h3>
+                  <p className="text-sm text-slate-500 mt-1">Rajpur Road, Uttarakhand</p>
+                  <div className="mt-6 p-4 bg-slate-50 rounded-2xl text-left border border-slate-100">
+                    <p className="text-xs font-bold text-slate-800 mb-2">Available Departments</p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-2 py-1 bg-white border border-slate-200 rounded text-xs text-slate-600">Ayurveda</span>
+                      <span className="px-2 py-1 bg-white border border-slate-200 rounded text-xs text-slate-600">Yoga</span>
+                      <span className="px-2 py-1 bg-white border border-slate-200 rounded text-xs text-slate-600">Homeopathy</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeModal === 'fab' && (
+                <div className="space-y-4">
+                  {prescStatus === "success" ? (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <FileText className="w-8 h-8" />
+                      </div>
+                      <h3 className="font-bold text-xl text-slate-900">Saved to Records!</h3>
+                      <p className="text-sm text-slate-500 mt-2">The prescription has been added to the patient's secure locker.</p>
+                      <button onClick={() => { setActiveModal(null); setPrescStatus("idle"); setPrescNote(""); }} className="mt-6 w-full py-3 bg-[#0D5C46] text-white rounded-xl font-bold">
+                        Done
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <label className="text-sm font-bold text-slate-700 block mb-1">Select Patient</label>
+                        <select 
+                          value={prescPatient} 
+                          onChange={(e) => setPrescPatient(e.target.value)}
+                          className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:outline-none focus:border-[#0D5C46]"
+                        >
+                          <option value="">-- Choose from queue --</option>
+                          {queue.map(q => <option key={q.id} value={q.name}>{q.name} ({q.time})</option>)}
+                          <option value="Guest Patient">Other / Walk-in</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-bold text-slate-700 block mb-1">Clinical Notes / Prescription</label>
+                        <textarea 
+                          value={prescNote}
+                          onChange={(e) => setPrescNote(e.target.value)}
+                          placeholder="Rx: Take 1 tablet twice daily..."
+                          className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 h-32 resize-none focus:outline-none focus:border-[#0D5C46]"
+                        />
+                      </div>
+                      <button 
+                        disabled={!prescPatient || !prescNote || prescStatus === "saving"}
+                        onClick={async () => {
+                          setPrescStatus("saving");
+                          try {
+                            await uploadDocumentRecord({
+                              title: `Prescription - Dr. Gaira`,
+                              date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+                              doctor: "Dr. Yashdeep Gaira",
+                              centre: "AYUSH OPD",
+                              type: "Prescription",
+                              size: "12 KB",
+                              notes: prescNote
+                            });
+                            setPrescStatus("success");
+                          } catch(e) {
+                            console.error(e);
+                            setPrescStatus("idle");
+                            alert("Failed to save.");
+                          }
+                        }}
+                        className="w-full py-3.5 bg-[#2563EB] text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                      >
+                        {prescStatus === "saving" ? (
+                           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : "Save to Digital Locker"}
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
             </motion.div>
           </div>
         )}
