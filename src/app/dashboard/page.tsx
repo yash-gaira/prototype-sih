@@ -512,7 +512,9 @@ export default function UserDashboard() {
             <span className="text-[10px] font-semibold">AI Summary</span>
           </button>
 
-          <button className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-emerald-800 transition-colors">
+          <button onClick={() => {
+            alert("Coming Soon: Advanced Settings and Features will be available in the next update!");
+          }} className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-emerald-800 transition-colors">
             <MoreHorizontal className="w-6 h-6" />
             <span className="text-[10px] font-semibold">More</span>
           </button>
