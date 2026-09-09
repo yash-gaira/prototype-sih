@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { searchSimilarChunks } from '@/lib/embeddings';
 
 const GROQ_KEYS = [
   process.env.GROQ_API_KEY,
@@ -11,7 +12,31 @@ let currentKeyIndex = 0;
 
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json();
+    const { messages, sessionId } = await req.json();
+
+    let finalMessages = [...messages];
+
+    // RAG RETRIEVAL
+    if (sessionId && messages.length > 0) {
+      // Get the last user message
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'user') {
+        const query = lastMessage.content || lastMessage.text;
+        
+        // Search vector store
+        const relevantChunks = await searchSimilarChunks(sessionId, query);
+        
+        if (relevantChunks.length > 0) {
+          const contextStr = relevantChunks.map(c => c.text).join('\n---\n');
+          
+          // Find system prompt and append context
+          const systemMsgIndex = finalMessages.findIndex(m => m.role === 'system');
+          if (systemMsgIndex !== -1) {
+            finalMessages[systemMsgIndex].content += `\n\n[PATIENT HISTORY CONTEXT FROM OLD REPORTS]:\n${contextStr}\n\nUse this context to understand their past medical conditions. Do not hallucinate medical facts.`;
+          }
+        }
+      }
+    }
 
     const callGroq = async (attempt = 0): Promise<Response> => {
       if (attempt >= GROQ_KEYS.length || GROQ_KEYS.length === 0) {
@@ -26,7 +51,7 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({
           model: "openai/gpt-oss-120b",
-          messages: messages
+          messages: finalMessages
         })
       });
 

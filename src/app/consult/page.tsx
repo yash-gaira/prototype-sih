@@ -98,10 +98,16 @@ Your goals & rules:
 6. CRITICAL: You MUST communicate EXCLUSIVELY in ${langContext}. All your responses must be written in the ${langContext} script. Never use English unless the patient asks for it.`
     });
 
+    let sessionId = localStorage.getItem("medikiosk_session_id");
+    if (!sessionId) {
+      sessionId = Math.random().toString(36).substring(7);
+      localStorage.setItem("medikiosk_session_id", sessionId);
+    }
+
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: formattedMessages })
+      body: JSON.stringify({ messages: formattedMessages, sessionId })
     });
 
     if (!response.ok) {
@@ -198,14 +204,53 @@ Your goals & rules:
     recognition.start();
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setMessages(prev => [
-        ...prev, 
-        { role: 'user', text: `[Uploaded Document: ${file.name}]` },
-        { role: 'ai', text: `I have scanned ${file.name}. How can I help you with this?` }
-      ]);
+    if (!file) return;
+
+    // Show initial message
+    setMessages(prev => [
+      ...prev, 
+      { role: 'user', text: `[Uploading Report: ${file.name}...]` }
+    ]);
+    setIsLoading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      // Retrieve or generate a session ID
+      let sessionId = localStorage.getItem("medikiosk_session_id");
+      if (!sessionId) {
+        sessionId = Math.random().toString(36).substring(7);
+        localStorage.setItem("medikiosk_session_id", sessionId);
+      }
+      formData.append("sessionId", sessionId);
+
+      const response = await fetch("/api/upload-report", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to process report");
+      }
+
+      const data = await response.json();
+      
+      setMessages(prev => {
+        const newMsgs = [...prev];
+        newMsgs[newMsgs.length - 1] = { role: 'user', text: `[Uploaded Document: ${file.name}]` };
+        return [
+          ...newMsgs,
+          { role: 'ai', text: `I have scanned ${file.name} and analyzed ${data.chunksProcessed} sections. How can I help you with this?` }
+        ];
+      });
+    } catch (err) {
+      console.error(err);
+      setMessages(prev => [...prev, { role: 'ai', text: "Sorry, I couldn't process that report. Please try again." }]);
+    } finally {
+      setIsLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
