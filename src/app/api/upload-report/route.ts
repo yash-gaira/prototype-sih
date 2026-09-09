@@ -15,18 +15,26 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(await file.arrayBuffer());
     let extractedText = "";
 
-    // 1. EXTRACT TEXT
-    if (file.type === "application/pdf") {
-      const pdf = require("pdf-parse/lib/pdf-parse.js");
-      const pdfData = await pdf(buffer);
-      extractedText = pdfData.text;
-    } else if (file.type.startsWith("image/")) {
-      const Tesseract = require("tesseract.js");
-      const { data: { text } } = await Tesseract.recognize(buffer, "eng");
-      extractedText = text;
-    } else {
-      return NextResponse.json({ error: "Unsupported file type. Please upload a PDF or Image." }, { status: 400 });
-    }
+    // 1. EXTRACT TEXT (WITH 2 SECOND TIMEOUT FOR QUICK DEMO)
+    const extractPromise = async () => {
+      if (file.type === "application/pdf") {
+        const pdf = require("pdf-parse/lib/pdf-parse.js");
+        const pdfData = await pdf(buffer);
+        return pdfData.text;
+      } else if (file.type.startsWith("image/")) {
+        const Tesseract = require("tesseract.js");
+        const { data: { text } } = await Tesseract.recognize(buffer, "eng");
+        return text;
+      } else {
+        throw new Error("Unsupported file type.");
+      }
+    };
+
+    const timeoutPromise = new Promise<string>((_, reject) => 
+      setTimeout(() => reject(new Error("Extraction Timed Out")), 2000)
+    );
+
+    extractedText = await Promise.race([extractPromise(), timeoutPromise]);
 
     if (!extractedText.trim()) {
       return NextResponse.json({ error: "No text could be extracted from the file." }, { status: 400 });

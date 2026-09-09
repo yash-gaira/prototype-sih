@@ -27,13 +27,19 @@ export async function getEmbeddingPipeline() {
 
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
-    const extractor = await getEmbeddingPipeline();
-    // Generate embeddings
-    const output = await extractor(text, { pooling: 'mean', normalize: true });
-    // output.data is a Float32Array
-    return Array.from(output.data);
+    const extractorPromise = async () => {
+      const extractor = await getEmbeddingPipeline();
+      const output = await extractor(text, { pooling: 'mean', normalize: true });
+      return Array.from(output.data) as number[];
+    };
+    
+    const timeoutPromise = new Promise<number[]>((_, reject) => 
+      setTimeout(() => reject(new Error("Embedding Timeout")), 1000)
+    );
+    
+    return await Promise.race([extractorPromise(), timeoutPromise]);
   } catch (error) {
-    console.warn("Embedding generation failed (Vercel timeout/read-only). Returning dummy vector.");
+    console.warn("Embedding generation failed/timed out. Returning dummy vector.");
     // Return a dummy 384-dimensional vector (size of MiniLM)
     return new Array(384).fill(0.1);
   }
