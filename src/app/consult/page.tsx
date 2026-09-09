@@ -287,9 +287,7 @@ Your goals & rules:
             <Button variant="outline" size="default" className="md:hidden text-xs" onClick={() => router.push("/dashboard")}>
               Exit
             </Button>
-            <Button variant="outline" size="default" className="hidden md:flex" onClick={() => router.push("/doctor")}>
-              Doctor View
-            </Button>
+
           </header>
 
           {/* Chat History */}
