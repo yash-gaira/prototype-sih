@@ -75,8 +75,7 @@ export async function POST(req: Request) {
       
       const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 500, chunkOverlap: 100 });
       const chunks = await splitter.splitText(mockText);
-      // sessionId is already parsed at the top of the file
-      await storeDocumentChunks(sessionId, chunks);
+      await storeDocumentChunks("fallback-mock-session", chunks);
 
       return NextResponse.json({ 
         success: true, 
