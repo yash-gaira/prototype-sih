@@ -57,7 +57,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ 
       success: true, 
       message: "Report successfully analyzed and indexed.",
-      chunksProcessed: chunks.length 
+      chunksProcessed: chunks.length,
+      extractedText: extractedText
     });
 
   } catch (error: any) {
@@ -72,17 +73,16 @@ export async function POST(req: Request) {
       Recent Lab Results: Fasting Blood Sugar 140 mg/dL (High). HbA1c 7.2%. 
       Symptoms noted in last visit: Occasional chest pain and fatigue.`;
       
-      const formData = await req.formData().catch(() => null);
-      const sessionId = formData?.get("sessionId") as string || "mock-session";
-      
       const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 500, chunkOverlap: 100 });
       const chunks = await splitter.splitText(mockText);
+      // sessionId is already parsed at the top of the file
       await storeDocumentChunks(sessionId, chunks);
 
       return NextResponse.json({ 
         success: true, 
         message: "Report analyzed (Fallback Mode due to Vercel limits).",
-        chunksProcessed: chunks.length 
+        chunksProcessed: chunks.length,
+        extractedText: mockText
       });
     } catch (fallbackError) {
       console.error("Fallback also failed:", fallbackError);

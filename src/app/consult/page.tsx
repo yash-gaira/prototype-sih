@@ -77,7 +77,12 @@ export default function ConsultPage() {
       const storedProfile = localStorage.getItem("medikiosk_patient_profile");
       if (storedProfile) {
         const profile = JSON.parse(storedProfile);
-        patientContext = `The patient's name is ${profile.name || 'Unknown'}, DOB is ${profile.dob || 'Unknown'}, Gender is ${profile.gender || 'Unknown'}. Greet them by name and be aware of their age/gender if it is relevant. `;
+        patientContext += `The patient's name is ${profile.name || 'Unknown'}, DOB is ${profile.dob || 'Unknown'}, Gender is ${profile.gender || 'Unknown'}. Greet them by name and be aware of their age/gender if it is relevant. `;
+      }
+      
+      const uploadedReport = localStorage.getItem("medikiosk_uploaded_report");
+      if (uploadedReport) {
+        patientContext += `\n\n[PATIENT HISTORY CONTEXT FROM OLD REPORTS]:\n${uploadedReport}\n\nUse this context to understand their past medical conditions. Do not hallucinate medical facts. Answer any questions about the report.`;
       }
       
       const savedLang = localStorage.getItem("medikiosk_language");
@@ -236,6 +241,10 @@ Your goals & rules:
       }
 
       const data = await response.json();
+      
+      if (data.extractedText) {
+        localStorage.setItem("medikiosk_uploaded_report", data.extractedText);
+      }
       
       setMessages(prev => {
         const newMsgs = [...prev];

@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  Bell, 
-  Users, 
-  Calendar, 
-  FileText, 
-  BarChart2, 
+import {
+  Bell,
+  Users,
+  Calendar,
+  FileText,
+  BarChart2,
   Building2,
   Clock,
   ChevronRight,
@@ -66,10 +66,10 @@ export default function DoctorDashboardScreen() {
   return (
     <main className="flex justify-center min-h-screen bg-slate-100 font-sans sm:p-4 md:p-8">
       <div className="w-full max-w-md md:max-w-6xl md:w-full bg-[#F8F9FA] sm:rounded-3xl relative shadow-2xl overflow-hidden border-x border-slate-200 sm:border-y flex flex-col md:flex-row min-h-[100dvh] md:min-h-[800px]">
-        
+
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col h-full overflow-y-auto pb-24 relative">
-          
+
           {/* Header */}
           <header className="px-6 md:px-10 pt-10 pb-4 flex justify-between items-start">
             <div>
@@ -78,7 +78,7 @@ export default function DoctorDashboardScreen() {
               <p className="text-xs md:text-sm text-slate-500 mt-0.5">Ayurveda Specialist, AYUSH</p>
             </div>
             <div className="relative">
-              <div 
+              <div
                 className="cursor-pointer hover:bg-slate-50 p-2 rounded-full transition-colors"
                 onClick={() => setShowNotifications(!showNotifications)}
               >
@@ -89,14 +89,14 @@ export default function DoctorDashboardScreen() {
                   </span>
                 )}
               </div>
-              
+
               {/* Notifications Dropdown */}
               {showNotifications && (
                 <div className="absolute top-12 right-0 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 p-4 z-50">
                   <div className="flex justify-between items-center mb-3">
                     <h4 className="font-bold text-slate-800 text-sm">Notifications</h4>
                     {notifications > 0 && (
-                      <button 
+                      <button
                         onClick={() => {
                           setNotifications(0);
                           setShowNotifications(false);
@@ -131,9 +131,9 @@ export default function DoctorDashboardScreen() {
           </header>
 
           <div className="px-6 md:px-10 flex-1 space-y-8">
-            
+
             {/* Top Summary Card (Mint Green) */}
-            <div 
+            <div
               onClick={() => router.push('/doctor-workspace')}
               className="bg-[#E8F5E9] rounded-3xl p-6 flex items-center justify-between border border-[#E0F2F1] shadow-[0_4px_12px_rgba(0,0,0,0.04)] cursor-pointer hover:scale-[1.02] transition-transform"
             >
@@ -158,25 +158,25 @@ export default function DoctorDashboardScreen() {
                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-blue-600 shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-slate-100 group-hover:border-blue-200 group-hover:bg-blue-50 transition-colors">
                     <Calendar className="w-7 h-7" />
                   </div>
-                  <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">My<br/>Schedule</span>
+                  <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">My<br />Schedule</span>
                 </button>
                 <button onClick={() => router.push('/doctor-workspace')} className="flex flex-col items-center gap-2 group">
                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-slate-100 group-hover:border-emerald-200 group-hover:bg-emerald-50 transition-colors">
                     <FileText className="w-7 h-7" />
                   </div>
-                  <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">Patient<br/>Records</span>
+                  <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">Patient<br />Records</span>
                 </button>
                 <button onClick={() => setActiveModal('reports')} className="flex flex-col items-center gap-2 group">
                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-purple-600 shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-slate-100 group-hover:border-purple-200 group-hover:bg-purple-50 transition-colors">
                     <BarChart2 className="w-7 h-7" />
                   </div>
-                  <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">Reports &<br/>Analytics</span>
+                  <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">Reports &<br />Analytics</span>
                 </button>
                 <button onClick={() => setActiveModal('centre')} className="flex flex-col items-center gap-2 group">
                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-orange-600 shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-slate-100 group-hover:border-orange-200 group-hover:bg-orange-50 transition-colors">
                     <Building2 className="w-7 h-7" />
                   </div>
-                  <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">AYUSH<br/>Centre</span>
+                  <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">AYUSH<br />Centre</span>
                 </button>
               </div>
             </div>
@@ -211,7 +211,7 @@ export default function DoctorDashboardScreen() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <select 
+                        <select
                           value={patient.status}
                           onChange={(e) => updateAppointmentStatus(patient.id, e.target.value)}
                           className="text-xs border border-slate-200 rounded-lg p-1.5 outline-none bg-slate-50 cursor-pointer"
@@ -220,7 +220,7 @@ export default function DoctorDashboardScreen() {
                           <option value="In Progress">In Progress</option>
                           <option value="Completed">Completed</option>
                         </select>
-                        <button 
+                        <button
                           onClick={() => router.push('/doctor-workspace')}
                           className="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl transition-colors border border-slate-200"
                         >
@@ -239,7 +239,7 @@ export default function DoctorDashboardScreen() {
               <h3 className="text-lg font-bold mb-6 relative z-10 flex items-center gap-2">
                 <BarChart2 className="w-5 h-5 text-emerald-200" /> Daily Metrics
               </h3>
-              
+
               <div className="grid grid-cols-2 gap-4 relative z-10">
                 <div className="bg-[#004D40]/40 p-4 rounded-2xl border border-emerald-600/30">
                   <p className="text-3xl font-black">{queue.length + 24}</p>
@@ -267,9 +267,9 @@ export default function DoctorDashboardScreen() {
         {/* Dynamic Action Modals */}
         {activeModal && (
           <div className="absolute inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <motion.div 
-              initial={{ y: 50, opacity: 0 }} 
-              animate={{ y: 0, opacity: 1 }} 
+            <motion.div
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
               className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl"
             >
               <div className="flex justify-between items-center mb-6">
@@ -294,7 +294,7 @@ export default function DoctorDashboardScreen() {
                 <p className="text-xs text-slate-400 max-w-[250px]">
                   For this SIH prototype, please use the core RAG and Triage features.
                 </p>
-                <button 
+                <button
                   onClick={() => setActiveModal(null)}
                   className="mt-6 px-6 py-2.5 bg-[#0D5C46] text-white rounded-xl text-sm font-bold shadow-md shadow-emerald-900/20 active:scale-95 transition-all"
                 >
@@ -329,7 +329,7 @@ export default function DoctorDashboardScreen() {
         </div>
 
         {/* FAB (Electric Blue) */}
-        <button 
+        <button
           onClick={() => setActiveModal('fab')}
           className="absolute bottom-6 left-1/2 -translate-x-1/2 w-14 h-14 bg-[#2563EB] text-white rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:scale-105 active:scale-95 transition-all z-50 group md:hidden border-2 border-white"
         >
