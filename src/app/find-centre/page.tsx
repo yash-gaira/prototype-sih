@@ -135,35 +135,45 @@ export default function FindCentreScreen() {
               </div>
               
               <div className="space-y-4 pb-20 md:pb-0">
-                {nearbyHospitals.map((hospital, index) => (
-                  <div key={hospital.id} className={`border rounded-2xl p-4 flex gap-4 transition-all hover:-translate-y-1 hover:shadow-md ${index === 0 ? 'border-emerald-200 bg-emerald-50/50' : 'border-slate-200 bg-white'}`}>
-                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${index === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-50 text-blue-700'}`}>
-                       <span className="font-bold text-lg">{hospital.name.charAt(0)}</span>
-                     </div>
-                     <div className="flex-1">
-                       <h3 className="font-bold text-slate-900 leading-tight">{hospital.name}</h3>
-                       <p className="text-xs font-medium text-slate-500 mt-1">{hospital.address}</p>
-                       {hospital.distance && (
-                         <p className="text-xs font-bold text-emerald-600 mt-0.5">{hospital.distance} km away</p>
-                       )}
-                       <div className="flex flex-wrap gap-1 mt-2">
-                         {hospital.systems.slice(0, 2).map(sys => (
-                           <span key={sys} className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-md">
-                             {sys}
-                           </span>
-                         ))}
-                         {hospital.systems.length > 2 && (
-                           <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-md">
-                             +{hospital.systems.length - 2} more
-                           </span>
-                         )}
+                {nearbyHospitals.map((hospital, index) => {
+                  const openInGoogleMaps = () => {
+                    const query = encodeURIComponent(`${hospital.name}, ${hospital.address}`);
+                    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+                  };
+                  return (
+                    <div 
+                      key={hospital.id} 
+                      onClick={openInGoogleMaps}
+                      className={`border rounded-2xl p-4 flex gap-4 transition-all hover:-translate-y-1 hover:shadow-md cursor-pointer ${index === 0 ? 'border-emerald-200 bg-emerald-50/50' : 'border-slate-200 bg-white'}`}
+                    >
+                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${index === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-50 text-blue-700'}`}>
+                         <span className="font-bold text-lg">{hospital.name.charAt(0)}</span>
                        </div>
-                     </div>
-                     <button className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform hover:scale-110 ${index === 0 ? 'bg-[#0f4b3e] text-white shadow-lg' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                       <Navigation className="w-4 h-4" />
-                     </button>
-                  </div>
-                ))}
+                       <div className="flex-1">
+                         <h3 className="font-bold text-slate-900 leading-tight">{hospital.name}</h3>
+                         <p className="text-xs font-medium text-slate-500 mt-1">{hospital.address}</p>
+                         {hospital.distance && (
+                           <p className="text-xs font-bold text-emerald-600 mt-0.5">{hospital.distance} km away</p>
+                         )}
+                         <div className="flex flex-wrap gap-1 mt-2">
+                           {hospital.systems.slice(0, 2).map(sys => (
+                             <span key={sys} className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-md">
+                               {sys}
+                             </span>
+                           ))}
+                           {hospital.systems.length > 2 && (
+                             <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-md">
+                               +{hospital.systems.length - 2} more
+                             </span>
+                           )}
+                         </div>
+                       </div>
+                       <button className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform hover:scale-110 ${index === 0 ? 'bg-[#0f4b3e] text-white shadow-lg' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                         <Navigation className="w-4 h-4" />
+                       </button>
+                    </div>
+                  );
+                })}
                 
                 {nearbyHospitals.length === 0 && locationStatus === "success" && (
                   <div className="text-center py-10">
