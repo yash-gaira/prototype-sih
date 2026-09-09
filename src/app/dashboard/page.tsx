@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { t } from "@/lib/translations";
+import { listenToPatientAppointments, uploadDocumentRecord } from "@/lib/firestoreService";
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -68,13 +69,21 @@ export default function UserDashboard() {
       );
     }
 
-    const apptRaw = localStorage.getItem("medikiosk_next_appointment");
-    if (apptRaw) {
-      try {
-        const appt = JSON.parse(apptRaw);
-        setNextAppt(appt);
-      } catch(e) {}
-    }
+    const unsubscribe = listenToPatientAppointments((appts) => {
+      if (appts && appts.length > 0) {
+        // Assume the first one is the most recent pending appointment
+        setNextAppt(appts[0]);
+      } else {
+        // Fallback to local storage if nothing in firebase yet
+        const apptRaw = localStorage.getItem("medikiosk_next_appointment");
+        if (apptRaw) {
+          try {
+            const appt = JSON.parse(apptRaw);
+            setNextAppt(appt);
+          } catch(e) {}
+        }
+      }
+    });
 
     const familyRaw = localStorage.getItem("medikiosk_family_members");
     if (familyRaw) {
@@ -82,6 +91,8 @@ export default function UserDashboard() {
         setFamilyMembers(JSON.parse(familyRaw));
       } catch(e) {}
     }
+
+    return () => unsubscribe();
   }, []);
 
   const [notifications, setNotifications] = useState([
@@ -213,13 +224,19 @@ export default function UserDashboard() {
       size: (file.size / (1024 * 1024)).toFixed(1) + " MB"
     };
 
-    setTimeout(() => {
+    setTimeout(async () => {
       setUploadState("success");
       
       // Save to localStorage
       const existingStr = localStorage.getItem("custom_documents");
       const existingDocs = existingStr ? JSON.parse(existingStr) : [];
       localStorage.setItem("custom_documents", JSON.stringify([newDoc, ...existingDocs]));
+
+      try {
+        await uploadDocumentRecord(newDoc);
+      } catch (error) {
+        console.error("Firebase upload record failed", error);
+      }
 
       setTimeout(() => {
         setShowUploadModal(false);

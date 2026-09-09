@@ -2,269 +2,230 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { User, Activity, AlertCircle, CheckCircle2, ChevronRight, Stethoscope, Eye, Clock, FileText, Search } from "lucide-react";
+import { 
+  Bell, 
+  Users, 
+  Calendar, 
+  FileText, 
+  BarChart2, 
+  Building2,
+  Clock,
+  ChevronRight,
+  Home,
+  BrainCircuit,
+  MoreHorizontal,
+  Plus
+} from "lucide-react";
 import { motion } from "framer-motion";
+import { listenToDoctorQueue, updateAppointmentStatus } from "@/lib/firestoreService";
 
-export default function DoctorDashboardPage() {
+export default function DoctorDashboardScreen() {
   const router = useRouter();
-  
-  const [patientProfile, setPatientProfile] = useState<any>(null);
-  const [ayushData, setAyushData] = useState<any>(null);
-  
-  // In-Clinic Focus State
-  const [nadi, setNadi] = useState("");
-  const [jihwa, setJihwa] = useState("");
-  
-  const [aiSummary, setAiSummary] = useState("");
-  const [criticalAlert, setCriticalAlert] = useState("");
+  const [notifications, setNotifications] = useState(3);
+
+  const [queue, setQueue] = useState<any[]>([]);
 
   useEffect(() => {
-    try {
-      const profileStr = localStorage.getItem("medikiosk_patient_profile");
-      if (profileStr) setPatientProfile(JSON.parse(profileStr));
+    const unsubscribe = listenToDoctorQueue((appts) => {
+      // Map firebase fields to UI format
+      const formatted = appts.map(appt => {
+        let color = "bg-slate-100 text-slate-700";
+        if (appt.status === "Waiting") color = "bg-blue-100 text-blue-700";
+        if (appt.status === "In Progress") color = "bg-orange-100 text-orange-700";
+        if (appt.status === "Completed") color = "bg-emerald-100 text-emerald-700";
 
-      const ayushStr = localStorage.getItem("ayush_assessment_data");
-      if (ayushStr) setAyushData(JSON.parse(ayushStr));
+        return {
+          id: appt.id,
+          name: appt.patientName || "Unknown",
+          time: appt.time,
+          status: appt.status,
+          color
+        };
+      });
+      setQueue(formatted);
+    });
 
-      const summaryStr = localStorage.getItem("ai_triage_summary");
-      if (summaryStr) setAiSummary(summaryStr);
-
-      if (localStorage.getItem("medikiosk_critical_alert") === "true") {
-        setCriticalAlert(localStorage.getItem("medikiosk_critical_reason") || "Severe Symptoms Detected");
-      }
-    } catch(e) {}
+    return () => unsubscribe();
   }, []);
 
-  const getAnomalies = () => {
-    if (!ayushData) return [];
-    const anomalies = [];
-    if (ayushData.sleep === "Disturbed" || ayushData.sleep === "Insomnia") {
-      anomalies.push({ parameter: "Sleep", value: ayushData.sleep, urgency: "high" });
-    }
-    if (ayushData.diet === "Poor" || ayushData.diet === "Excessive") {
-      anomalies.push({ parameter: "Diet/Appetite", value: ayushData.diet, urgency: "medium" });
-    }
-    if (ayushData.bowel === "Constipated" || ayushData.bowel === "Loose") {
-      anomalies.push({ parameter: "Bowel Habits", value: ayushData.bowel, urgency: "high" });
-    }
-    if (ayushData.agni === "Visham Agni" || ayushData.agni === "Manda Agni" || ayushData.agni === "Tikshna Agni") {
-      anomalies.push({ parameter: "Agni (Digestive Fire)", value: ayushData.agni, urgency: "high" });
-    }
-    return anomalies;
-  };
-
-  const anomalies = getAnomalies();
-
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-6 md:px-10 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-emerald-900 rounded-xl flex items-center justify-center text-white">
-            <Stethoscope className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-xl font-extrabold text-slate-900 leading-tight">Doctor Workspace</h1>
-            <p className="text-sm font-medium text-emerald-700">OPD Optimization Mode Active</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="px-4 py-2 bg-emerald-50 text-emerald-800 rounded-lg text-sm font-bold border border-emerald-100 flex items-center gap-2">
-            <Clock className="w-4 h-4" /> Goal: 20 Min Consultation
-          </div>
-          <button onClick={() => router.push('/dashboard')} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-            <User className="w-6 h-6 text-slate-600" />
-          </button>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto p-6 md:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <main className="flex justify-center min-h-screen bg-slate-100 font-sans sm:p-4 md:p-8">
+      <div className="w-full max-w-md md:max-w-6xl md:w-full bg-[#F8F9FA] sm:rounded-3xl relative shadow-2xl overflow-hidden border-x border-slate-200 sm:border-y flex flex-col md:flex-row min-h-[100dvh] md:min-h-[800px]">
         
-        {/* Left Column: Patient Context & Smart Focus */}
-        <div className="lg:col-span-8 flex flex-col gap-8">
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col h-full overflow-y-auto pb-24 relative">
           
-          {criticalAlert && (
-            <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-red-600 text-white rounded-3xl p-6 shadow-lg flex items-center justify-between border-4 border-red-700 animate-pulse">
-              <div className="flex items-center gap-4">
-                <AlertCircle className="w-10 h-10 text-white" />
-                <div>
-                  <h2 className="text-2xl font-black uppercase tracking-wider">Emergency Alert</h2>
-                  <p className="font-medium mt-1">Patient flagged with severe condition: <span className="font-bold underline">{criticalAlert}</span></p>
-                </div>
-              </div>
-              <button onClick={() => {
-                setCriticalAlert("");
-                localStorage.removeItem("medikiosk_critical_alert");
-              }} className="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded-xl font-bold transition-colors">
-                Dismiss
-              </button>
-            </motion.div>
-          )}
+          {/* Header */}
+          <header className="px-6 md:px-10 pt-10 pb-4 flex justify-between items-start">
+            <div>
+              <p className="text-sm md:text-base text-slate-500 font-medium">Good morning,</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">Dr. Yashdeep Gaira</h1>
+              <p className="text-xs md:text-sm text-slate-500 mt-0.5">Ayurveda Specialist, AYUSH</p>
+            </div>
+            <div className="relative cursor-pointer hover:bg-slate-50 p-2 rounded-full transition-colors">
+              <Bell className="w-7 h-7 text-[#0D5C46]" />
+              {notifications > 0 && (
+                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white">
+                  {notifications}
+                </span>
+              )}
+            </div>
+          </header>
 
-          {/* Patient Card */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex items-start gap-6">
-            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center shrink-0">
-              <User className="w-10 h-10 text-slate-400" />
-            </div>
-            <div className="flex-1">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-2xl font-bold text-slate-900">{patientProfile?.name || "Unknown Patient"}</h2>
-                  <p className="text-slate-500 font-medium mt-1">ID: {patientProfile?.aadhaarNumber || "N/A"} • {patientProfile?.gender || "Unknown"} • DOB: {patientProfile?.dob || "Unknown"}</p>
-                </div>
-                <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold border border-blue-100">
-                  Verified via Aadhaar
-                </div>
-              </div>
-              <div className="mt-4 p-4 bg-orange-50 border border-orange-100 rounded-2xl">
-                <p className="text-xs font-bold text-orange-800 uppercase tracking-wide mb-1">Chief Complaint</p>
-                <p className="text-lg font-bold text-slate-900">{ayushData?.mainComplaint || "Not provided"}</p>
-                <p className="text-sm font-medium text-orange-700 mt-1">Duration: {ayushData?.duration || "N/A"}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Smart Focus (UX Highlight) */}
-          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-gradient-to-br from-red-50 to-rose-50 rounded-3xl p-6 border border-red-100 shadow-sm">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-red-100 text-red-600 rounded-xl">
-                <AlertCircle className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-red-900">Smart Focus</h3>
-                <p className="text-sm font-medium text-red-700">Will focus on only relevant topics based on pre-assessment</p>
-              </div>
-            </div>
+          <div className="px-6 md:px-10 flex-1 space-y-8">
             
-            {anomalies.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {anomalies.map((anom, idx) => (
-                  <div key={idx} className="bg-white rounded-2xl p-4 border border-red-100 shadow-sm flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">{anom.parameter}</p>
-                      <p className="text-lg font-bold text-slate-900 mt-0.5">{anom.value}</p>
+            {/* Top Summary Card (Mint Green) */}
+            <div className="bg-[#E8F5E9] rounded-3xl p-6 flex items-center justify-between border border-[#E0F2F1] shadow-[0_4px_12px_rgba(0,0,0,0.04)] cursor-pointer hover:scale-[1.02] transition-transform">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#0D5C46] shadow-sm border border-emerald-50">
+                  <Users className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-[#0D5C46]">Total Patients Managed</p>
+                  <p className="text-2xl font-bold text-[#004D40] tracking-tight">3,150+</p>
+                  <p className="text-xs text-emerald-700 font-medium">View Patients</p>
+                </div>
+              </div>
+              <ChevronRight className="w-6 h-6 text-[#0D5C46]" />
+            </div>
+
+            {/* Quick Actions Grid */}
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 mb-4">Quick Actions</h3>
+              <div className="grid grid-cols-4 gap-3 md:gap-6">
+                <button className="flex flex-col items-center gap-2 group">
+                  <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-blue-600 shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-slate-100 group-hover:border-blue-200 group-hover:bg-blue-50 transition-colors">
+                    <Calendar className="w-7 h-7" />
+                  </div>
+                  <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">My<br/>Schedule</span>
+                </button>
+                <button className="flex flex-col items-center gap-2 group">
+                  <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-slate-100 group-hover:border-emerald-200 group-hover:bg-emerald-50 transition-colors">
+                    <FileText className="w-7 h-7" />
+                  </div>
+                  <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">Patient<br/>Records</span>
+                </button>
+                <button className="flex flex-col items-center gap-2 group">
+                  <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-purple-600 shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-slate-100 group-hover:border-purple-200 group-hover:bg-purple-50 transition-colors">
+                    <BarChart2 className="w-7 h-7" />
+                  </div>
+                  <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">Reports &<br/>Analytics</span>
+                </button>
+                <button className="flex flex-col items-center gap-2 group">
+                  <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-orange-600 shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-slate-100 group-hover:border-orange-200 group-hover:bg-orange-50 transition-colors">
+                    <Building2 className="w-7 h-7" />
+                  </div>
+                  <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">AYUSH<br/>Centre</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Today's Live Queue */}
+            <div>
+              <div className="flex justify-between items-end mb-4">
+                <h3 className="text-lg font-bold text-slate-900">Today's Live Queue</h3>
+                <span className="text-sm font-bold text-blue-600 cursor-pointer">View All</span>
+              </div>
+              <div className="space-y-3">
+                {queue.map((patient) => (
+                  <div key={patient.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 font-bold text-lg">
+                        {patient.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-900">{patient.name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Clock className="w-3 h-3 text-slate-400" />
+                          <span className="text-xs font-medium text-slate-500">{patient.time}</span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${patient.color}`}>
+                            {patient.status}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-red-300" />
+                    <div className="flex items-center gap-2">
+                      <select 
+                        value={patient.status}
+                        onChange={(e) => updateAppointmentStatus(patient.id, e.target.value)}
+                        className="text-xs border border-slate-200 rounded-lg p-1.5 outline-none bg-slate-50 cursor-pointer"
+                      >
+                        <option value="Waiting">Waiting</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                      </select>
+                      <button 
+                        onClick={() => router.push('/doctor-workspace')}
+                        className="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl transition-colors border border-slate-200"
+                      >
+                        View Details
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="bg-white rounded-2xl p-6 text-center border border-emerald-100">
-                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                <p className="font-bold text-slate-900">No critical anomalies detected in pre-assessment.</p>
-              </div>
-            )}
-          </motion.div>
-
-          {/* AI Summary Section */}
-          {aiSummary && (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-6 border border-blue-100 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-blue-600 text-white rounded-xl">
-                  <Activity className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900">Summary of Patient's Problem</h3>
-                  <p className="text-sm font-medium text-blue-700">Generated by AI Triage</p>
-                </div>
-              </div>
-              <div className="bg-white p-5 rounded-2xl border border-blue-100 text-slate-800 leading-relaxed whitespace-pre-wrap font-medium">
-                {aiSummary}
-              </div>
-            </div>
-          )}
-
-          {/* In-Clinic Focus */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl">
-                <Eye className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-slate-900">In-Clinic Focus</h3>
-                <p className="text-sm font-medium text-slate-500">Record live clinical findings</p>
-              </div>
             </div>
 
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Nadi Pariksha (Pulse Examination)</label>
-                <textarea 
-                  value={nadi}
-                  onChange={(e) => setNadi(e.target.value)}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:border-emerald-500 focus:bg-white transition-colors outline-none"
-                  placeholder="Record pulse rate, rhythm, volume, and dosha dominance (Vata/Pitta/Kapha)..."
-                  rows={3}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Jihwa Pariksha (Tongue Examination)</label>
-                <textarea 
-                  value={jihwa}
-                  onChange={(e) => setJihwa(e.target.value)}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:border-emerald-500 focus:bg-white transition-colors outline-none"
-                  placeholder="Record coating, color, shape, and moisture..."
-                  rows={3}
-                />
-              </div>
+            {/* Key Statistics Card (Deep Forest Green) */}
+            <div className="bg-[#0D5C46] rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#004D40] rounded-full opacity-50" />
+              <h3 className="text-lg font-bold mb-6 relative z-10 flex items-center gap-2">
+                <BarChart2 className="w-5 h-5 text-emerald-200" /> Daily Metrics
+              </h3>
               
-              <button className="w-full py-4 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl font-bold text-lg transition-colors shadow-md">
-                Finalize Diagnosis & Generate Prescription
-              </button>
-            </div>
-          </div>
-          
-        </div>
-
-        {/* Right Column: Pre-Consultation Data */}
-        <div className="lg:col-span-4">
-          <div className="bg-slate-100 rounded-3xl p-6 border border-slate-200 sticky top-24">
-            <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-slate-500" /> Pre-Consultation Data
-            </h3>
-            
-            <div className="space-y-4">
-              <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Core Parameters</h4>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-slate-600">Prakriti</span>
-                    <span className="text-sm font-bold text-slate-900">{ayushData?.prakriti || "—"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-slate-600">Vikruti</span>
-                    <span className="text-sm font-bold text-slate-900">{ayushData?.vikruti || "—"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-slate-600">Agni</span>
-                    <span className="text-sm font-bold text-slate-900">{ayushData?.agni || "—"}</span>
-                  </div>
+              <div className="grid grid-cols-2 gap-4 relative z-10">
+                <div className="bg-[#004D40]/40 p-4 rounded-2xl border border-emerald-600/30">
+                  <p className="text-3xl font-black">24</p>
+                  <p className="text-xs text-emerald-100 font-medium mt-1">Today's Patients</p>
                 </div>
-              </div>
-
-              <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Habits & Lifestyle</h4>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-slate-600">Sleep</span>
-                    <span className="text-sm font-bold text-slate-900">{ayushData?.sleep || "—"}</span>
+                <div className="bg-[#004D40]/40 p-4 rounded-2xl border border-emerald-600/30">
+                  <p className="text-3xl font-black">8</p>
+                  <p className="text-xs text-emerald-100 font-medium mt-1">Pending Consults</p>
+                </div>
+                <div className="col-span-2 bg-[#004D40]/40 p-4 rounded-2xl border border-emerald-600/30 flex justify-between items-center">
+                  <div>
+                    <p className="text-xl font-black">94%</p>
+                    <p className="text-xs text-emerald-100 font-medium mt-1">Performance Overview</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-slate-600">Diet</span>
-                    <span className="text-sm font-bold text-slate-900">{ayushData?.diet || "—"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-slate-600">Bowel</span>
-                    <span className="text-sm font-bold text-slate-900">{ayushData?.bowel || "—"}</span>
+                  <div className="w-12 h-12 rounded-full border-4 border-emerald-400 border-t-transparent flex items-center justify-center rotate-45">
+                    <span className="-rotate-45 text-xs font-bold">+2%</span>
                   </div>
                 </div>
               </div>
             </div>
-            
+
           </div>
         </div>
+
+        {/* Bottom Navigation */}
+        <div className="absolute bottom-0 left-0 w-full bg-white/80 backdrop-blur-xl border-t border-slate-200 pb-safe md:hidden z-40">
+          <div className="flex justify-around items-center px-2 py-3">
+            <button className="flex flex-col items-center gap-1 p-2 w-16 text-[#0D5C46]">
+              <Home className="w-6 h-6" />
+              <span className="text-[10px] font-semibold">Dashboard</span>
+            </button>
+            <button className="flex flex-col items-center gap-1 p-2 w-16 text-slate-400 hover:text-slate-600 transition-colors">
+              <Users className="w-6 h-6" />
+              <span className="text-[10px] font-semibold">Patients</span>
+            </button>
+            <div className="w-16" /> {/* Spacer for FAB */}
+            <button className="flex flex-col items-center gap-1 p-2 w-16 text-slate-400 hover:text-slate-600 transition-colors">
+              <BrainCircuit className="w-6 h-6" />
+              <span className="text-[10px] font-semibold">Clinical AI</span>
+            </button>
+            <button className="flex flex-col items-center gap-1 p-2 w-16 text-slate-400 hover:text-slate-600 transition-colors">
+              <MoreHorizontal className="w-6 h-6" />
+              <span className="text-[10px] font-semibold">More</span>
+            </button>
+          </div>
+        </div>
+
+        {/* FAB (Electric Blue) */}
+        <button className="absolute bottom-6 left-1/2 -translate-x-1/2 w-14 h-14 bg-[#2563EB] text-white rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:scale-105 active:scale-95 transition-all z-50 group md:hidden border-2 border-white">
+          <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
+        </button>
 
       </div>
-    </div>
+    </main>
   );
 }

@@ -19,6 +19,7 @@ import {
   Navigation
 } from "lucide-react";
 import { ayushHospitals } from "@/data/hospitals";
+import { bookAppointment } from "@/lib/firestoreService";
 
 type Step = "CENTRE" | "DEPARTMENT" | "DOCTOR" | "DATETIME" | "CONFIRM" | "SUCCESS";
 
@@ -105,19 +106,29 @@ export default function BookAppointment() {
     else router.push("/dashboard");
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     const dateStr = selectedDate?.date || '15 Sep';
     const dayNum = dateStr.split(' ')[0];
     const month = dateStr.split(' ')[1] || 'SEP';
     
     const appointmentDetails = {
+      patientName: "Naman Mahra",
       doctor: selectedDoctor?.name || 'Dr. R. Verma',
       dept: selectedDept?.name || 'Ayurveda',
       date: dayNum,
       monthYear: `${month.toUpperCase()} 2026`,
-      time: selectedTime || '11:00 AM'
+      time: selectedTime || '11:00 AM',
+      center: selectedCentre?.name || "AYUSH Centre"
     };
-    localStorage.setItem("medikiosk_next_appointment", JSON.stringify(appointmentDetails));
+
+    try {
+      await bookAppointment(appointmentDetails);
+      localStorage.setItem("medikiosk_next_appointment", JSON.stringify(appointmentDetails));
+    } catch (error) {
+      console.error("Firebase booking failed", error);
+      // Fallback
+      localStorage.setItem("medikiosk_next_appointment", JSON.stringify(appointmentDetails));
+    }
 
     setCurrentStep("SUCCESS");
     setTimeout(() => {
