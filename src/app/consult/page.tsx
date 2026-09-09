@@ -316,7 +316,7 @@ Your goals & rules:
             <div className="flex gap-2 md:gap-4 mt-3 md:mt-4">
               <Button onClick={() => fileInputRef.current?.click()} variant="outline" size="default" className="flex-1 text-sm md:text-base py-4 md:py-6 rounded-xl md:rounded-2xl border-slate-300 text-slate-700 hover:bg-slate-50">
                 <FileText className="w-4 h-4 md:w-5 md:h-5 mr-2 text-slate-500" />
-                <span className="hidden md:inline">Scan Old Reports</span>
+                <span className="hidden md:inline">Scan Report</span>
                 <span className="md:hidden">Scan</span>
               </Button>
               
