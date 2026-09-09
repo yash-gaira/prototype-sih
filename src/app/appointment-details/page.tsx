@@ -3,11 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ChevronLeft, Calendar, User, Clock, MapPin, QrCode } from "lucide-react";
+import QRCode from "react-qr-code";
 
 export default function AppointmentDetailsScreen() {
   const router = useRouter();
   
   const [appt, setAppt] = useState({
+    id: "mock-id-123",
     date: "15 Sep",
     monthYear: "2026",
     time: "11:00 AM",
@@ -21,6 +23,7 @@ export default function AppointmentDetailsScreen() {
       try {
         const parsed = JSON.parse(raw);
         setAppt({
+          id: parsed.id || "mock-id-123",
           date: parsed.date || "15 Sep",
           monthYear: parsed.monthYear || "2026",
           time: parsed.time || "11:00 AM",
@@ -83,10 +86,14 @@ export default function AppointmentDetailsScreen() {
             </div>
 
             <div className="flex flex-col items-center justify-center">
-              <div className="w-32 h-32 bg-slate-100 rounded-xl flex items-center justify-center mb-2">
-                 <QrCode className="w-24 h-24 text-slate-800" />
+              <div className="bg-white p-2 rounded-xl flex items-center justify-center mb-2 shadow-sm border border-slate-100">
+                 <QRCode 
+                   value={`https://prototype-sih-rho.vercel.app/scan?id=${appt.id}`} 
+                   size={130}
+                   level="M"
+                 />
               </div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Scan at reception</p>
+              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-2">Scan at reception</p>
             </div>
           </div>
         </div>

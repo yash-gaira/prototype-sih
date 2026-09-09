@@ -111,7 +111,7 @@ export default function BookAppointment() {
     const dayNum = dateStr.split(' ')[0];
     const month = dateStr.split(' ')[1] || 'SEP';
     
-    const appointmentDetails = {
+    let appointmentDetails: any = {
       patientName: "Naman Mahra",
       doctor: selectedDoctor?.name || 'Dr. R. Verma',
       dept: selectedDept?.name || 'Ayurveda',
@@ -122,11 +122,13 @@ export default function BookAppointment() {
     };
 
     try {
-      await bookAppointment(appointmentDetails);
+      const id = await bookAppointment(appointmentDetails);
+      appointmentDetails.id = id;
       localStorage.setItem("medikiosk_next_appointment", JSON.stringify(appointmentDetails));
     } catch (error) {
       console.error("Firebase booking failed", error);
       // Fallback
+      appointmentDetails.id = "mock-id-123";
       localStorage.setItem("medikiosk_next_appointment", JSON.stringify(appointmentDetails));
     }
 

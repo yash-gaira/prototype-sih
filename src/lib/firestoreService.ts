@@ -26,7 +26,7 @@ export const bookAppointment = async (details: any) => {
       ...details,
       patientId: PATIENT_ID,
       doctorId: DOCTOR_ID,
-      status: "Waiting",
+      status: "Scheduled", // Changed from Waiting to Scheduled so QR scan check-in works
       createdAt: serverTimestamp()
     });
     return docRef.id;
