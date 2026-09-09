@@ -30,13 +30,7 @@ export default function UserDashboard() {
   const [language, setLanguage] = useState<string>("en");
   const [userName, setUserName] = useState("Naman Mahra");
   const [aadhaarNumber, setAadhaarNumber] = useState("XXXX XXXX 1234");
-  const [nextAppt, setNextAppt] = useState({
-    date: "15",
-    monthYear: "SEP 2026",
-    doctor: "Dr. R. Verma",
-    dept: "Ayurveda",
-    time: "11:00 AM"
-  });
+  const [nextAppt, setNextAppt] = useState<any>(null);
 
   useEffect(() => {
     const savedLang = localStorage.getItem("preferredLanguage");
@@ -432,32 +426,47 @@ export default function UserDashboard() {
                       </div>
                     </div>
                     
-                    <div className="flex gap-4 md:gap-6 relative z-10 bg-emerald-900/40 p-4 rounded-2xl">
-                      <div className="flex flex-col items-center justify-center pr-4 md:pr-6 border-r border-emerald-600/50">
-                        <span className="text-4xl md:text-5xl font-extrabold tracking-tighter">{nextAppt.date.split(" ")[0]}</span>
-                        <span className="text-xs md:text-sm font-bold tracking-widest mt-1 uppercase">{nextAppt.date.split(" ")[1] ? `${nextAppt.date.split(" ")[1]} 2026` : nextAppt.monthYear}</span>
-                      </div>
-                      
-                      <div className="flex flex-col justify-center gap-3 min-w-0">
-                        <div className="flex items-start gap-3">
-                          <User className="w-4 h-4 md:w-5 md:h-5 mt-0.5 text-emerald-200 flex-shrink-0" />
-                          <div className="min-w-0">
-                            <p className="font-bold text-sm md:text-base leading-none truncate">{nextAppt.doctor}</p>
-                            <p className="text-xs md:text-sm text-emerald-100 mt-1 truncate">{nextAppt.dept} OPD</p>
+                    {nextAppt ? (
+                      <>
+                        <div className="flex gap-4 md:gap-6 relative z-10 bg-emerald-900/40 p-4 rounded-2xl">
+                          <div className="flex flex-col items-center justify-center pr-4 md:pr-6 border-r border-emerald-600/50">
+                            <span className="text-4xl md:text-5xl font-extrabold tracking-tighter">{nextAppt.date.split(" ")[0]}</span>
+                            <span className="text-xs md:text-sm font-bold tracking-widest mt-1 uppercase">{nextAppt.date.split(" ")[1] ? `${nextAppt.date.split(" ")[1]} 2026` : nextAppt.monthYear}</span>
+                          </div>
+                          
+                          <div className="flex flex-col justify-center gap-3 min-w-0">
+                            <div className="flex items-start gap-3">
+                              <User className="w-4 h-4 md:w-5 md:h-5 mt-0.5 text-emerald-200 flex-shrink-0" />
+                              <div className="min-w-0">
+                                <p className="font-bold text-sm md:text-base leading-none truncate">{nextAppt.doctor}</p>
+                                <p className="text-xs md:text-sm text-emerald-100 mt-1 truncate">{nextAppt.dept} OPD</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                              <Clock className="w-4 h-4 md:w-5 md:h-5 mt-0.5 text-emerald-200 flex-shrink-0" />
+                              <div className="min-w-0">
+                                <p className="font-bold text-sm md:text-base leading-none truncate">{nextAppt.time}</p>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-start gap-3">
-                          <Clock className="w-4 h-4 md:w-5 md:h-5 mt-0.5 text-emerald-200 flex-shrink-0" />
-                          <div className="min-w-0">
-                            <p className="font-bold text-sm md:text-base leading-none truncate">{nextAppt.time}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
 
-                    <button onClick={() => router.push("/appointment-details")} className="w-full mt-6 bg-white text-[#0f4b3e] font-bold text-sm md:text-base py-3 md:py-4 rounded-xl hover:bg-emerald-50 transition-colors relative z-10">
-                      View Details
-                    </button>
+                        <button onClick={() => router.push("/appointment-details")} className="w-full mt-6 bg-white text-[#0f4b3e] font-bold text-sm md:text-base py-3 md:py-4 rounded-xl hover:bg-emerald-50 transition-colors relative z-10">
+                          View Details
+                        </button>
+                      </>
+                    ) : (
+                      <div className="relative z-10 text-center py-4">
+                        <div className="w-16 h-16 bg-emerald-800/50 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-600">
+                          <Calendar className="w-8 h-8 text-emerald-200" />
+                        </div>
+                        <p className="text-lg font-bold text-white mb-2">No Upcoming Visits</p>
+                        <p className="text-sm text-emerald-200 mb-6 px-4">Book your next consultation with our AYUSH specialists today.</p>
+                        <button onClick={() => router.push("/book-appointment")} className="w-full bg-emerald-400 text-emerald-950 font-bold text-sm md:text-base py-3 md:py-4 rounded-xl hover:bg-emerald-300 transition-colors shadow-lg">
+                          Book Appointment
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
