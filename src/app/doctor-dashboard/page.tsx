@@ -42,7 +42,21 @@ export default function DoctorDashboardScreen() {
           color
         };
       });
-      setQueue(formatted);
+      
+      // Inject mock patients to show a busy clinic for the demo
+      const mockPatients = [
+        { id: 'mock-1', name: 'Ramesh Kumar', time: '09:15 AM', status: 'Completed', color: 'bg-emerald-100 text-emerald-700' },
+        { id: 'mock-2', name: 'Sunita Devi', time: '09:45 AM', status: 'Completed', color: 'bg-emerald-100 text-emerald-700' },
+        { id: 'mock-3', name: 'Anil Sharma', time: '10:30 AM', status: 'In Progress', color: 'bg-orange-100 text-orange-700' },
+        { id: 'mock-4', name: 'Pooja Singh', time: '11:15 AM', status: 'Waiting', color: 'bg-blue-100 text-blue-700' },
+        { id: 'mock-5', name: 'Karan Patel', time: '11:40 AM', status: 'Waiting', color: 'bg-blue-100 text-blue-700' },
+        { id: 'mock-6', name: 'Vikram Singh', time: '12:00 PM', status: 'Waiting', color: 'bg-blue-100 text-blue-700' },
+      ];
+      
+      const existingNames = new Set(formatted.map(f => f.name));
+      const filteredMocks = mockPatients.filter(m => !existingNames.has(m.name));
+      
+      setQueue([...formatted, ...filteredMocks]);
     });
 
     return () => unsubscribe();
