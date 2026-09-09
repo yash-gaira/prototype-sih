@@ -21,6 +21,13 @@ function ScanProcessor() {
 
     const markArrived = async () => {
       try {
+        if (id.startsWith("mock-id-")) {
+          // If it's a mock ID from local storage fallback, simulate success for the demo
+          setStatus("success");
+          setTimeout(() => router.push("/"), 3000);
+          return;
+        }
+        
         await updateAppointmentStatus(id, "Waiting");
         setStatus("success");
         // Optionally redirect to home after 3 seconds
