@@ -3,17 +3,17 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { Phone, UploadCloud, CreditCard, ChevronRight, ChevronLeft } from "lucide-react";
+import { Mail, UploadCloud, CreditCard, ChevronRight, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { t } from "@/lib/translations";
 import { db, auth } from "@/lib/firebase";
 import { collection, doc, setDoc } from "firebase/firestore";
 import Tesseract from 'tesseract.js';
-import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [selectedMethod, setSelectedMethod] = useState<"number" | "abha" | "aadhaar" | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<"email" | "abha" | "aadhaar" | null>(null);
   
   const abhaInputRef = useRef<HTMLInputElement>(null);
   const aadhaarInputRef = useRef<HTMLInputElement>(null);
@@ -64,7 +64,8 @@ export default function LoginScreen() {
             variant="outline"
             onClick={() => {
               setLanguage(lang.code);
-              localStorage.setItem('medikiosk_language', lang.name);
+              localStorage.setItem('medikiosk_language', lang.code);
+              localStorage.setItem('preferredLanguage', lang.code);
             }}
             className="w-full text-lg flex justify-between px-6 py-6 h-auto border-2 border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e] transition-all"
           >
@@ -82,7 +83,8 @@ export default function LoginScreen() {
                 variant="outline"
                 onClick={() => {
                   setLanguage(lang.code);
-                  localStorage.setItem('medikiosk_language', lang.name);
+                  localStorage.setItem('medikiosk_language', lang.code);
+                  localStorage.setItem('preferredLanguage', lang.code);
                 }}
                 className="w-full flex flex-col items-center justify-center py-4 h-auto border-2 border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e] transition-all"
               >
@@ -184,44 +186,30 @@ export default function LoginScreen() {
     }
   };
 
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [userNameInput, setUserNameInput] = useState("");
   const [confirmationResult, setConfirmationResult] = useState<any>(null);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
 
-  const setupRecaptcha = () => {
-    if (!(window as any).recaptchaVerifier) {
-      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-      });
-    }
-  };
-
   const handleSendOtp = async () => {
-    if (phoneNumber.length !== 10) {
-      alert("Please enter a valid 10-digit number");
+    if (!email.includes("@")) {
+      alert("Please enter a valid email address");
       return;
     }
     setIsSendingOtp(true);
     try {
-      setupRecaptcha();
-      const appVerifier = (window as any).recaptchaVerifier;
-      const formattedNumber = `+91${phoneNumber}`;
-      
-      const confirmation = await signInWithPhoneNumber(auth, formattedNumber, appVerifier);
-      setConfirmationResult(confirmation);
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email: email,
+      });
+
+      if (error) throw error;
+
+      setConfirmationResult(true); // Flag to show OTP entry UI
     } catch (err: any) {
       console.error("Error sending OTP", err);
-      // Firebase throws specific error codes like auth/billing-not-enabled
-      if (err.code === 'auth/billing-not-enabled') {
-        alert("Firebase Billing Not Enabled: Please upgrade your Firebase project to the Blaze plan to send SMS OTPs.");
-      } else if (err.code === 'auth/network-request-failed') {
-        alert("Network Error: Please turn OFF Brave Shields or Adblockers to allow reCAPTCHA to load.");
-      } else {
-        alert(`Failed to send OTP: ${err.message || "Unknown error"}`);
-      }
+      alert(`Failed to send OTP: ${err.message || "Unknown error"}`);
     } finally {
       setIsSendingOtp(false);
     }
@@ -238,13 +226,26 @@ export default function LoginScreen() {
     }
     setIsVerifyingOtp(true);
     try {
-      const result = await confirmationResult.confirm(otp);
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: email,
+        token: otp,
+        type: 'email'
+      });
+
+      if (error) throw error;
       
+      // Update user metadata in Supabase (optional, but good for keeping name)
+      if (data.user) {
+        await supabase.auth.updateUser({
+          data: { name: userNameInput.trim() }
+        });
+      }
+
       // Save minimal profile
       localStorage.setItem("medikiosk_patient_profile", JSON.stringify({
         name: userNameInput.trim(),
-        phoneNumber: result.user.phoneNumber,
-        authMethod: 'phone'
+        email: email,
+        authMethod: 'email'
       }));
       
       router.push("/dashboard");
@@ -255,6 +256,7 @@ export default function LoginScreen() {
       setIsVerifyingOtp(false);
     }
   };
+
 
   const renderAuthSelection = () => {
     if (aadhaarDetails) {
@@ -318,15 +320,15 @@ export default function LoginScreen() {
 
           <Button 
             size="lg" 
-            variant={selectedMethod === "number" ? "default" : "outline"}
-            onClick={() => setSelectedMethod("number")}
-            className={`w-full text-lg flex justify-between px-6 py-6 h-auto border-2 transition-all ${selectedMethod === 'number' ? 'border-[#0f4b3e] bg-[#0f4b3e] text-white shadow-lg' : 'border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e]'}`}
+            variant={selectedMethod === "email" ? "default" : "outline"}
+            onClick={() => setSelectedMethod("email")}
+            className={`w-full text-left flex items-center px-4 md:px-6 py-4 md:py-6 h-auto min-h-[5rem] border-2 transition-all ${selectedMethod === 'email' ? 'border-[#0f4b3e] bg-[#0f4b3e] text-white shadow-lg' : 'border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e]'}`}
           >
-            <div className="flex items-center gap-4">
-              <div className={`p-2 rounded-lg ${selectedMethod === 'number' ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
-                <Phone className="w-6 h-6" />
+            <div className="flex items-center gap-3 md:gap-4 w-full">
+              <div className={`p-2 shrink-0 rounded-lg ${selectedMethod === 'email' ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
+                <Mail className="w-6 h-6 shrink-0" />
               </div>
-              <span className="font-bold">{t(language, 'mobileNumber')}</span>
+              <span className="font-bold text-base md:text-lg whitespace-normal break-words flex-1 leading-snug">Email Address</span>
             </div>
           </Button>
 
@@ -337,13 +339,13 @@ export default function LoginScreen() {
                setSelectedMethod("abha");
                abhaInputRef.current?.click();
             }}
-            className={`w-full text-lg flex justify-between px-6 py-6 h-auto border-2 transition-all ${selectedMethod === 'abha' ? 'border-[#0f4b3e] bg-[#0f4b3e] text-white shadow-lg' : 'border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e]'}`}
+            className={`w-full text-left flex items-center px-4 md:px-6 py-4 md:py-6 h-auto min-h-[5rem] border-2 transition-all ${selectedMethod === 'abha' ? 'border-[#0f4b3e] bg-[#0f4b3e] text-white shadow-lg' : 'border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e]'}`}
           >
-            <div className="flex items-center gap-4">
-              <div className={`p-2 rounded-lg ${selectedMethod === 'abha' ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
-                <UploadCloud className="w-6 h-6" />
+            <div className="flex items-center gap-3 md:gap-4 w-full">
+              <div className={`p-2 shrink-0 rounded-lg ${selectedMethod === 'abha' ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
+                <UploadCloud className="w-6 h-6 shrink-0" />
               </div>
-              <span className="font-bold">{t(language, 'uploadAbha')}</span>
+              <span className="font-bold text-base md:text-lg whitespace-normal break-words flex-1 leading-snug">{t(language, 'uploadAbha')}</span>
             </div>
             <input type="file" accept="image/*,.pdf" className="hidden" ref={abhaInputRef} onChange={handleLogin} />
           </Button>
@@ -354,20 +356,20 @@ export default function LoginScreen() {
             onClick={() => {
                aadhaarInputRef.current?.click();
             }}
-            className={`w-full text-lg flex justify-between px-6 py-6 h-auto border-2 transition-all ${selectedMethod === 'aadhaar' ? 'border-[#0f4b3e] bg-[#0f4b3e] text-white shadow-lg' : 'border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e]'}`}
+            className={`w-full text-left flex items-center px-4 md:px-6 py-4 md:py-6 h-auto min-h-[5rem] border-2 transition-all ${selectedMethod === 'aadhaar' ? 'border-[#0f4b3e] bg-[#0f4b3e] text-white shadow-lg' : 'border-slate-200 text-slate-700 hover:border-[#0f4b3e] hover:bg-emerald-50 hover:text-[#0f4b3e]'}`}
           >
-            <div className="flex items-center gap-4">
-              <div className={`p-2 rounded-lg ${selectedMethod === 'aadhaar' ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
-                <CreditCard className="w-6 h-6" />
+            <div className="flex items-center gap-3 md:gap-4 w-full">
+              <div className={`p-2 shrink-0 rounded-lg ${selectedMethod === 'aadhaar' ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
+                <CreditCard className="w-6 h-6 shrink-0" />
               </div>
-              <span className="font-bold">{t(language, 'aadhaarOtp')}</span>
+              <span className="font-bold text-base md:text-lg whitespace-normal break-words flex-1 leading-snug">{t(language, 'aadhaarOtp')}</span>
             </div>
             <input type="file" accept="image/*" className="hidden" ref={aadhaarInputRef} onChange={handleAadhaarUpload} />
           </Button>
         </div>
 
         <AnimatePresence>
-          {selectedMethod === "number" && (
+          {selectedMethod === "email" && (
             <motion.div 
               initial={{ opacity: 0, height: 0, y: -20 }}
               animate={{ opacity: 1, height: "auto", y: 0 }}
@@ -377,18 +379,16 @@ export default function LoginScreen() {
               {!confirmationResult ? (
                 <>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold border-r border-slate-300 pr-3">+91</span>
                     <input 
-                      type="tel"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                      placeholder={t(language, 'enterNumber')}
-                      className="w-full p-4 pl-16 text-lg font-medium bg-white border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-[#0f4b3e] focus:ring-4 focus:ring-emerald-100 transition-all shadow-sm"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter email address"
+                      className="w-full p-4 text-lg font-medium bg-white border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-[#0f4b3e] focus:ring-4 focus:ring-emerald-100 transition-all shadow-sm"
                     />
                   </div>
-                  <div id="recaptcha-container"></div>
-                  <Button onClick={handleSendOtp} disabled={isSendingOtp || phoneNumber.length !== 10} className="w-full py-6 text-lg font-bold bg-[#0f4b3e] hover:bg-emerald-800 text-white rounded-2xl shadow-lg">
-                    {isSendingOtp ? "Sending..." : t(language, 'sendOtp')} <ChevronRight className="w-5 h-5 ml-2" />
+                  <Button onClick={handleSendOtp} disabled={isSendingOtp || !email.includes("@")} className="w-full py-6 text-lg font-bold bg-[#0f4b3e] hover:bg-emerald-800 text-white rounded-2xl shadow-lg">
+                    {isSendingOtp ? "Sending..." : "Send OTP"} <ChevronRight className="w-5 h-5 ml-2" />
                   </Button>
                 </>
               ) : (

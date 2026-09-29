@@ -31,6 +31,7 @@ export const metadata: Metadata = {
 };
 
 import ViewSwitcher from "@/components/ViewSwitcher";
+import { CoinProvider } from "@/contexts/CoinContext";
 
 export default function RootLayout({
   children,
@@ -40,7 +41,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        {children}
+        <CoinProvider>
+          {children}
+        </CoinProvider>
       </body>
     </html>
   );

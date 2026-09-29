@@ -2,9 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, MapPin, Navigation, Map as MapIcon, Loader2 } from "lucide-react";
+import { ChevronLeft, MapPin, Navigation, Map as MapIcon, Loader2, X, CheckCircle2 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import { ayushHospitals, Hospital } from "@/data/hospitals";
+import { useCoins } from "@/contexts/CoinContext";
+import { AnimatePresence, motion } from "framer-motion";
+import { t } from "@/lib/translations";
 
 export default function FindCentreScreen() {
   const router = useRouter();
@@ -12,6 +15,48 @@ export default function FindCentreScreen() {
   const [locationStatus, setLocationStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [userState, setUserState] = useState<string>("");
   const [nearbyHospitals, setNearbyHospitals] = useState<(Hospital & { distance?: string })[]>([]);
+
+  const { balance, deductCoins } = useCoins();
+  const [selectedService, setSelectedService] = useState<{name: string, cost: number} | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showInsufficientModal, setShowInsufficientModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [language, setLanguage] = useState("en");
+
+  useEffect(() => {
+    const savedLang = localStorage.getItem("medikiosk_language");
+    if (savedLang) setLanguage(savedLang);
+  }, []);
+
+  const handleServiceClick = (service: {name: string, cost: number}) => {
+    setSelectedService(service);
+    if (balance >= service.cost) {
+      setShowConfirmModal(true);
+    } else {
+      setShowInsufficientModal(true);
+    }
+  };
+
+  const handleConfirmTransaction = () => {
+    if (selectedService && deductCoins(selectedService.cost, selectedService.name)) {
+      setShowConfirmModal(false);
+      setShowSuccessModal(true);
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        setSelectedService(null);
+      }, 2500);
+    } else {
+      setShowConfirmModal(false);
+      setShowInsufficientModal(true);
+    }
+  };
+
+  const premiumServices = [
+    { id: 1, name: "Special Consultation", cost: 30 },
+    { id: 2, name: "Priority Appointment", cost: 50 },
+    { id: 3, name: "Detailed AYUSH Report", cost: 40 },
+    { id: 4, name: "Premium Wellness", cost: 75 },
+  ];
 
   useEffect(() => {
     // Prompt for location on mount
@@ -87,7 +132,7 @@ export default function FindCentreScreen() {
                 <ChevronLeft className="w-8 h-8 text-slate-800" />
               </button>
               <div>
-                <h1 className="text-xl md:text-2xl font-bold text-slate-900">Find AYUSH Centre</h1>
+                <h1 className="text-xl md:text-2xl font-bold text-slate-900">{t(language, 'findAyushCentre')}</h1>
                 {userState && (
                   <p className="text-sm font-medium text-emerald-600 flex items-center gap-1 mt-1">
                     <MapPin className="w-3 h-3" /> Showing centres in {userState}
@@ -101,7 +146,7 @@ export default function FindCentreScreen() {
               className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold transition-colors"
             >
               <MapPin className="w-4 h-4" />
-              <span className="hidden md:inline">Update Location</span>
+              <span className="hidden md:inline whitespace-normal break-words text-center">{t(language, 'updateLocation')}</span>
             </button>
           </header>
 
@@ -112,7 +157,7 @@ export default function FindCentreScreen() {
               <div className="absolute inset-0 bg-slate-200 bg-cover bg-center opacity-60 flex items-center justify-center">
                  <div className="text-center">
                    <MapIcon className="w-12 h-12 text-slate-400 mx-auto mb-2 opacity-50" />
-                   <span className="text-slate-500 font-bold uppercase tracking-widest text-sm">Interactive Map</span>
+                   <span className="text-slate-500 font-bold uppercase tracking-widest text-sm whitespace-normal break-words text-center">{t(language, 'interactiveMap')}</span>
                  </div>
               </div>
               
@@ -128,7 +173,7 @@ export default function FindCentreScreen() {
               <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 md:hidden" />
               
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-slate-900">Nearby Centres</h2>
+                <h2 className="text-xl font-bold text-slate-900 whitespace-normal break-words leading-snug">{t(language, 'nearbyCentres')}</h2>
                 {locationStatus === "loading" && (
                   <Loader2 className="w-5 h-5 text-emerald-600 animate-spin" />
                 )}
@@ -141,10 +186,10 @@ export default function FindCentreScreen() {
                     window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
                   };
                   return (
+                    <div key={hospital.id} className="relative transition-all hover:-translate-y-1 hover:shadow-md group">
                     <div 
-                      key={hospital.id} 
                       onClick={openInGoogleMaps}
-                      className={`border rounded-2xl p-4 flex gap-4 transition-all hover:-translate-y-1 hover:shadow-md cursor-pointer ${index === 0 ? 'border-emerald-200 bg-emerald-50/50' : 'border-slate-200 bg-white'}`}
+                      className={`border rounded-2xl p-4 flex gap-4 cursor-pointer relative z-10 ${index === 0 ? 'border-emerald-200 bg-emerald-50/50' : 'border-slate-200 bg-white'}`}
                     >
                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${index === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-50 text-blue-700'}`}>
                          <span className="font-bold text-lg">{hospital.name.charAt(0)}</span>
@@ -172,6 +217,24 @@ export default function FindCentreScreen() {
                          <Navigation className="w-4 h-4" />
                        </button>
                     </div>
+                    {/* Premium Services */}
+                    {index < 2 && ( // Add to first 2 hospitals to avoid clutter
+                      <div className="mt-[-8px] pt-6 px-4 pb-4 bg-white border border-t-0 border-slate-200 rounded-b-2xl shadow-sm space-y-3 relative z-0">
+                        <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-2 whitespace-normal break-words leading-tight">{t(language, 'premiumAyushServices')}</p>
+                        {premiumServices.slice(index * 2, index * 2 + 2).map(service => (
+                          <div key={service.id} className="flex justify-between items-center bg-slate-50 rounded-xl p-3 border border-slate-100">
+                            <span className="text-sm font-bold text-slate-800">{service.name}</span>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleServiceClick(service); }}
+                              className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-200 transition-colors shadow-sm hover:shadow"
+                            >
+                              <span className="text-[10px]">⭐</span> {service.cost} Coins
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    </div>
                   );
                 })}
                 
@@ -183,6 +246,93 @@ export default function FindCentreScreen() {
               </div>
             </div>
 
+            {/* Modals */}
+            <AnimatePresence>
+              {showConfirmModal && selectedService && (
+                <motion.div 
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                  onClick={() => setShowConfirmModal(false)}
+                >
+                  <motion.div 
+                    initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
+                    className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-xl font-bold text-slate-900">{t(language, 'useCoinsQ').replace('?', '')} {selectedService.cost} {t(language, 'coins')}?</h3>
+                      <button onClick={() => setShowConfirmModal(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-500">
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6">
+                      <p className="text-sm text-slate-600 mb-2">{t(language, 'youAreAboutToAccess')} <strong>{selectedService.name}</strong>.</p>
+                      <div className="flex justify-between items-center font-bold text-lg">
+                        <span className="text-slate-500">{t(language, 'yourBalance')}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="line-through text-slate-400">{balance}</span>
+                          <span className="text-emerald-600">→ {balance - selectedService.cost}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <button onClick={() => setShowConfirmModal(false)} className="flex-1 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors whitespace-normal break-words text-center px-1">
+                        {t(language, 'cancel')}
+                      </button>
+                      <button onClick={handleConfirmTransaction} className="flex-1 py-3 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-200 transition-colors whitespace-normal break-words text-center px-1">
+                        {t(language, 'confirmAndContinue')}
+                      </button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+
+              {showInsufficientModal && selectedService && (
+                <motion.div 
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                  onClick={() => setShowInsufficientModal(false)}
+                >
+                  <motion.div 
+                    initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
+                    className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <X className="w-8 h-8 text-red-500" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-2">{t(language, 'insufficientCoins')}</h3>
+                    <p className="text-slate-600 mb-6">
+                      {t(language, 'youNeed')} <strong>{selectedService.cost} {t(language, 'coins')}</strong> {t(language, 'coinsToAccessThisService')}<br/>
+                      {t(language, 'yourCurrentBalance')} <strong>{balance} {t(language, 'coins')}</strong>
+                    </p>
+                    <div className="flex gap-3">
+                      <button onClick={() => setShowInsufficientModal(false)} className="flex-1 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors whitespace-normal break-words text-center px-1">
+                        {t(language, 'close')}
+                      </button>
+                      <button onClick={() => setShowInsufficientModal(false)} className="flex-1 py-3 rounded-xl font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-md shadow-amber-200 transition-colors whitespace-normal break-words text-center px-1">
+                        {t(language, 'getMoreCoins')}
+                      </button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+
+              {showSuccessModal && (
+                <motion.div 
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none"
+                >
+                  <motion.div 
+                    initial={{ scale: 0.8, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }}
+                    className="bg-slate-900/90 text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-3 backdrop-blur-md"
+                  >
+                    <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+                    <span className="font-bold whitespace-normal break-words">{t(language, 'accessGranted')}</span>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

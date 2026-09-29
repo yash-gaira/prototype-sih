@@ -19,11 +19,16 @@ import {
   ShieldAlert,
   CheckCircle2,
   X,
-  LogOut
+  LogOut,
+  UserPlus,
+  Settings,
+  HelpCircle,
+  Info
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { t } from "@/lib/translations";
 import { listenToPatientAppointments, uploadDocumentRecord } from "@/lib/firestoreService";
+import { useCoins } from "@/contexts/CoinContext";
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -102,9 +107,9 @@ export default function UserDashboard() {
     {
       id: 1,
       type: "success",
-      title: "Welcome to MediKiosk!",
-      message: "Your Ayush health ID is generated. You can now consult the AI.",
-      time: "Just now",
+      titleKey: "welcomeTitle",
+      messageKey: "welcomeDesc",
+      timeKey: "justNow",
       icon: CheckCircle2,
       bg: "bg-emerald-50",
       border: "border-emerald-100",
@@ -116,9 +121,9 @@ export default function UserDashboard() {
     {
       id: 2,
       type: "info",
-      title: "AI Triage Ready",
-      message: "Try our new AI assessment tool to reduce your consultation time.",
-      time: "2 hours ago",
+      titleKey: "aiTriageReady",
+      messageKey: "aiTriageDesc",
+      timeKey: "hoursAgo",
       icon: Sparkles,
       bg: "bg-blue-50",
       border: "border-blue-100",
@@ -130,9 +135,9 @@ export default function UserDashboard() {
     {
       id: 3,
       type: "warning",
-      title: "Complete your Profile",
-      message: "Please add your past medical history for better AI diagnosis.",
-      time: "1 day ago",
+      titleKey: "completeProfile",
+      messageKey: "completeProfileDesc",
+      timeKey: "dayAgo",
       icon: ShieldAlert,
       bg: "bg-orange-50",
       border: "border-orange-100",
@@ -158,7 +163,11 @@ export default function UserDashboard() {
   const [uploadState, setUploadState] = useState<"idle" | "uploading" | "success">("idle");
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showMoreOptions, setShowMoreOptions] = useState(false);
+  const [showCoinsModal, setShowCoinsModal] = useState(false);
   const profileMenuRef = React.useRef<HTMLDivElement>(null);
+  
+  const { balance, transactions } = useCoins();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -290,7 +299,7 @@ export default function UserDashboard() {
                         className="w-full text-left px-3 py-2.5 text-sm text-rose-600 hover:bg-rose-50 rounded-lg flex items-center gap-3 font-semibold transition-colors"
                       >
                         <LogOut className="w-4 h-4" />
-                        Logout
+                        {t(language, 'logout')}
                       </button>
                     </div>
                   </motion.div>
@@ -304,13 +313,24 @@ export default function UserDashboard() {
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <div className="relative cursor-pointer hover:bg-slate-50 p-2 rounded-full transition-colors" onClick={() => setShowNotifications(!showNotifications)}>
-                <Bell className="w-7 h-7 text-emerald-800" />
-                {notifications.length > 0 && (
-                  <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white">
-                    {notifications.length}
-                  </span>
-                )}
+              <div className="flex items-center gap-1">
+                <div 
+                  className="flex items-center gap-1.5 cursor-pointer px-2 py-1.5 rounded-full hover:bg-slate-50 transition-colors"
+                  onClick={() => setShowCoinsModal(true)}
+                >
+                  <div className="w-6 h-6 bg-amber-400 rounded-full flex items-center justify-center shadow-sm border border-amber-500">
+                    <span className="text-white text-[10px]">⭐</span>
+                  </div>
+                  <span className="font-bold text-slate-800 text-sm">{balance}</span>
+                </div>
+                <div className="relative cursor-pointer hover:bg-slate-50 p-2 rounded-full transition-colors" onClick={() => setShowNotifications(!showNotifications)}>
+                  <Bell className="w-7 h-7 text-emerald-800" />
+                  {notifications.length > 0 && (
+                    <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white">
+                      {notifications.length}
+                    </span>
+                  )}
+                </div>
               </div>
               <button 
                 onClick={() => router.push("/ayush-assessment")} 
@@ -354,25 +374,25 @@ export default function UserDashboard() {
                       <div className="w-14 h-14 md:w-20 md:h-20 bg-white rounded-2xl md:rounded-3xl flex items-center justify-center text-emerald-600 shadow-sm border border-slate-100 group-hover:border-emerald-200 group-hover:bg-emerald-50 transition-colors">
                         <Calendar className="w-6 h-6 md:w-8 md:h-8" />
                       </div>
-                      <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">Book<br/>Appointment</span>
+                      <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight whitespace-normal break-words w-full px-1">{t(language, 'bookAppointment')}</span>
                     </button>
                     <button onClick={handleUploadClick} className="flex flex-col items-center gap-2 md:gap-3 group">
                       <div className="w-14 h-14 md:w-20 md:h-20 bg-white rounded-2xl md:rounded-3xl flex items-center justify-center text-blue-600 shadow-sm border border-slate-100 group-hover:border-blue-200 group-hover:bg-blue-50 transition-colors">
                         <Upload className="w-6 h-6 md:w-8 md:h-8" />
                       </div>
-                      <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">Upload<br/>Document</span>
+                      <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight whitespace-normal break-words w-full px-1">{t(language, 'uploadDocument')}</span>
                     </button>
                     <button onClick={() => router.push("/documents")} className="flex flex-col items-center gap-2 md:gap-3 group">
                       <div className="w-14 h-14 md:w-20 md:h-20 bg-white rounded-2xl md:rounded-3xl flex items-center justify-center text-orange-600 shadow-sm border border-slate-100 group-hover:border-orange-200 group-hover:bg-orange-50 transition-colors">
                         <FileText className="w-6 h-6 md:w-8 md:h-8" />
                       </div>
-                      <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">Document<br/>History</span>
+                      <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight whitespace-normal break-words w-full px-1">{t(language, 'documentHistory')}</span>
                     </button>
                     <button onClick={() => router.push("/find-centre")} className="flex flex-col items-center gap-2 md:gap-3 group">
                       <div className="w-14 h-14 md:w-20 md:h-20 bg-white rounded-2xl md:rounded-3xl flex items-center justify-center text-rose-600 shadow-sm border border-slate-100 group-hover:border-rose-200 group-hover:bg-rose-50 transition-colors">
                         <MapPin className="w-6 h-6 md:w-8 md:h-8" />
                       </div>
-                      <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight">Find AYUSH<br/>Centre</span>
+                      <span className="text-[10px] md:text-xs font-semibold text-slate-600 text-center leading-tight whitespace-normal break-words w-full px-1">{t(language, 'findAyushCentre')}</span>
                     </button>
                   </div>
                 </div>
@@ -414,7 +434,7 @@ export default function UserDashboard() {
                       >
                         <Plus className="w-6 h-6 md:w-8 md:h-8" />
                       </button>
-                      <span className="text-xs md:text-sm font-semibold text-slate-500 mt-1">Add</span>
+                      <span className="text-xs md:text-sm font-semibold text-slate-500 mt-1 whitespace-normal break-words text-center">{t(language, 'add')}</span>
                     </div>
                   </div>
                 </div>
@@ -430,8 +450,8 @@ export default function UserDashboard() {
                     
                     <div className="flex justify-between items-center mb-6 relative z-10">
                       <div className="flex items-center gap-2">
-                        <Calendar className="w-5 h-5 text-emerald-100" />
-                        <h3 className="text-lg md:text-xl font-bold">Next Appointment</h3>
+                        <Calendar className="w-5 h-5 text-emerald-100 shrink-0" />
+                        <h3 className="text-lg md:text-xl font-bold whitespace-normal break-words leading-snug">{t(language, 'nextAppointment')}</h3>
                       </div>
                     </div>
                     
@@ -461,7 +481,7 @@ export default function UserDashboard() {
                         </div>
 
                         <button onClick={() => router.push("/appointment-details")} className="w-full mt-6 bg-white text-[#0f4b3e] font-bold text-sm md:text-base py-3 md:py-4 rounded-xl hover:bg-emerald-50 transition-colors relative z-10">
-                          View Details
+                          {t(language, 'viewDetails')}
                         </button>
                       </>
                     ) : (
@@ -497,31 +517,161 @@ export default function UserDashboard() {
 
         {/* Bottom Navigation (Mobile Only) */}
         <div className="md:hidden absolute bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 flex justify-around items-center px-2 z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.03)] sm:rounded-b-3xl">
-          <button className="flex flex-col items-center gap-1.5 text-emerald-800">
-            <Home className="w-6 h-6 fill-emerald-800" />
-            <span className="text-[10px] font-bold">Home</span>
+          <button className="flex flex-col items-center gap-1.5 text-emerald-800 w-[60px]">
+            <Home className="w-6 h-6 fill-emerald-800 shrink-0" />
+            <span className="text-[10px] font-bold text-center leading-tight whitespace-normal break-words w-full">{t(language, 'home')}</span>
           </button>
           
-          <button onClick={() => router.push("/history")} className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-emerald-800 transition-colors">
-            <Calendar className="w-6 h-6" />
-            <span className="text-[10px] font-semibold">Visits</span>
+          <button onClick={() => router.push("/history")} className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-emerald-800 transition-colors w-[60px]">
+            <Calendar className="w-6 h-6 shrink-0" />
+            <span className="text-[10px] font-semibold text-center leading-tight whitespace-normal break-words w-full">{t(language, 'visits')}</span>
           </button>
 
-          <button onClick={() => router.push("/ai-summary")} className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-emerald-800 transition-colors">
-            <Sparkles className="w-6 h-6" />
-            <span className="text-[10px] font-semibold">AI Summary</span>
+          <button onClick={() => router.push("/ai-summary")} className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-emerald-800 transition-colors w-[60px]">
+            <Sparkles className="w-6 h-6 shrink-0" />
+            <span className="text-[10px] font-semibold text-center leading-tight whitespace-normal break-words w-full">{t(language, 'aiSummary')}</span>
           </button>
 
           <button onClick={() => {
-            alert("Coming Soon: Advanced Settings and Features will be available in the next update!");
-          }} className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-emerald-800 transition-colors">
-            <MoreHorizontal className="w-6 h-6" />
-            <span className="text-[10px] font-semibold">More</span>
+            setShowMoreOptions(true);
+          }} className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-emerald-800 transition-colors w-[60px]">
+            <MoreHorizontal className="w-6 h-6 shrink-0" />
+            <span className="text-[10px] font-semibold text-center leading-tight whitespace-normal break-words w-full">{t(language, 'more')}</span>
           </button>
         </div>
 
         {/* Modals */}
         <AnimatePresence>
+          {showCoinsModal && (
+            <motion.div 
+              initial={{ opacity: 0, y: 100 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              exit={{ opacity: 0, y: 100 }}
+              className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4"
+              onClick={() => setShowCoinsModal(false)}
+            >
+              <div 
+                className="bg-white w-full md:max-w-md rounded-t-3xl md:rounded-3xl p-6 shadow-2xl flex flex-col h-[80vh] md:h-auto md:max-h-[80vh]"
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="flex justify-center md:hidden mb-4 shrink-0">
+                  <div className="w-12 h-1.5 bg-slate-300 rounded-full" />
+                </div>
+                <div className="flex justify-between items-center pb-4 shrink-0">
+                  <h3 className="text-2xl font-bold text-slate-900">{t(language, 'myCoins')}</h3>
+                  <button onClick={() => setShowCoinsModal(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-500">
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto pb-6">
+                  <div className="flex flex-col items-center justify-center py-6 bg-gradient-to-b from-emerald-50 to-white rounded-3xl border border-emerald-100 mb-6">
+                    <div className="w-20 h-20 bg-amber-400 rounded-full flex items-center justify-center shadow-lg border-4 border-amber-200 mb-4">
+                      <span className="text-white text-4xl">⭐</span>
+                    </div>
+                    <h2 className="text-4xl font-extrabold text-emerald-900 mb-1">{balance}</h2>
+                    <p className="font-bold text-emerald-700">{t(language, 'coinsAvailable')}</p>
+                    <p className="text-sm text-slate-500 text-center mt-3 px-6">{t(language, 'useCoinsToAccess')}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-bold text-slate-900 mb-4">{t(language, 'transactionHistory')}</h4>
+                    <div className="space-y-3">
+                      {transactions.length === 0 ? (
+                        <p className="text-center text-slate-500 py-4 text-sm">{t(language, 'noTransactionsYet')}</p>
+                      ) : (
+                        transactions.map(tx => (
+                          <div key={tx.id} className="flex justify-between items-center p-4 border border-slate-100 rounded-2xl bg-white shadow-sm">
+                            <div>
+                              <p className="font-bold text-slate-900">{tx.description}</p>
+                              <p className="text-xs font-medium text-slate-500">{new Date(tx.date).toLocaleDateString()}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className={`font-bold ${tx.type === 'earn' ? 'text-emerald-600' : 'text-orange-500'}`}>
+                                {tx.type === 'earn' ? '+' : '-'}{tx.amount} {t(language, 'coins')}
+                              </p>
+                              <p className="text-xs text-slate-400">Bal: {tx.balanceAfter}</p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {showMoreOptions && (
+            <motion.div 
+              initial={{ opacity: 0, y: 100 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              exit={{ opacity: 0, y: 100 }}
+              className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4"
+              onClick={() => setShowMoreOptions(false)}
+            >
+              <div 
+                className="bg-white w-full md:max-w-md rounded-t-3xl md:rounded-3xl p-6 shadow-2xl space-y-6"
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="flex justify-center md:hidden mb-2">
+                  <div className="w-12 h-1.5 bg-slate-300 rounded-full" />
+                </div>
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                  <h3 className="text-2xl font-bold text-slate-900">{t(language, 'moreOptions')}</h3>
+                  <button onClick={() => setShowMoreOptions(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-500">
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between p-4 bg-emerald-50 rounded-2xl cursor-pointer" onClick={() => { setShowMoreOptions(false); setShowAddMember(true); }}>
+                    <div className="flex items-center gap-4">
+                      <UserPlus className="w-6 h-6 text-emerald-700" />
+                      <div>
+                        <h4 className="font-bold text-slate-900">{t(language, 'addFamilyMember')}</h4>
+                        <p className="text-sm text-slate-500">Add and manage your family members</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-emerald-700" />
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-2xl cursor-pointer transition-colors" onClick={() => alert("Settings coming soon")}>
+                    <div className="flex items-center gap-4">
+                      <Settings className="w-6 h-6 text-slate-600" />
+                      <div>
+                        <h4 className="font-bold text-slate-900">{t(language, 'settings')}</h4>
+                        <p className="text-sm text-slate-500">App preferences and account settings</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-400" />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-2xl cursor-pointer transition-colors" onClick={() => alert("Help & Support coming soon")}>
+                    <div className="flex items-center gap-4">
+                      <HelpCircle className="w-6 h-6 text-slate-600" />
+                      <div>
+                        <h4 className="font-bold text-slate-900">{t(language, 'helpAndSupport')}</h4>
+                        <p className="text-sm text-slate-500">Get help or contact us</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-400" />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-2xl cursor-pointer transition-colors" onClick={() => alert("About coming soon")}>
+                    <div className="flex items-center gap-4">
+                      <Info className="w-6 h-6 text-slate-600" />
+                      <div>
+                        <h4 className="font-bold text-slate-900">{t(language, 'about')}</h4>
+                        <p className="text-sm text-slate-500">App version, terms and policies</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-400" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {showNotifications && (
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -534,11 +684,11 @@ export default function UserDashboard() {
                 onClick={e => e.stopPropagation()}
               >
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-2xl font-bold text-slate-900">Notifications</h3>
+                  <h3 className="text-2xl font-bold text-slate-900">{t(language, 'notificationsTitle')}</h3>
                   <div className="flex items-center gap-2">
                     {notifications.length > 0 && (
-                      <button onClick={() => setNotifications([])} className="text-xs font-bold text-slate-500 hover:text-rose-500 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors">
-                        Clear All
+                      <button onClick={() => setNotifications([])} className="text-xs font-bold text-slate-500 hover:text-rose-500 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors whitespace-normal break-words text-center">
+                        {t(language, 'clearAll')}
                       </button>
                     )}
                     <button onClick={() => setShowNotifications(false)} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200">
@@ -552,7 +702,7 @@ export default function UserDashboard() {
                       <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center">
                         <Bell className="w-8 h-8 text-slate-300" />
                       </div>
-                      <p className="text-slate-500 font-medium">No new notifications</p>
+                      <p className="text-slate-500 font-medium whitespace-normal break-words">{t(language, 'noNewNotifications')}</p>
                     </div>
                   ) : (
                     notifications.map(n => {
@@ -572,9 +722,9 @@ export default function UserDashboard() {
                             <Icon className="w-5 h-5" />
                           </div>
                           <div className="pr-6">
-                            <h4 className={`font-bold ${n.textClass}`}>{n.title}</h4>
-                            <p className={`text-sm ${n.descClass} mt-1`}>{n.message}</p>
-                            <p className={`text-xs ${n.timeClass} mt-2 font-medium`}>{n.time}</p>
+                            <h4 className={`font-bold ${n.textClass} whitespace-normal break-words`}>{t(language, n.titleKey)}</h4>
+                            <p className={`text-sm ${n.descClass} mt-1 whitespace-normal break-words`}>{t(language, n.messageKey)}</p>
+                            <p className={`text-xs ${n.timeClass} mt-2 font-medium`}>{t(language, n.timeKey)}</p>
                           </div>
                         </div>
                       );
@@ -597,7 +747,7 @@ export default function UserDashboard() {
                 <button onClick={() => setShowAddMember(false)} className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200">
                   <X className="w-5 h-5" />
                 </button>
-                <h3 className="text-2xl font-bold text-slate-900 mb-6">Add Family Member</h3>
+                <h3 className="text-2xl font-bold text-slate-900 mb-6">{t(language, 'addFamilyMember')}</h3>
                 
                 <div className="space-y-4">
                   <div>

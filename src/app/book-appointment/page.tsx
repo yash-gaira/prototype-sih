@@ -20,15 +20,16 @@ import {
 } from "lucide-react";
 import { ayushHospitals } from "@/data/hospitals";
 import { bookAppointment } from "@/lib/firestoreService";
+import { t } from "@/lib/translations";
 
 type Step = "CENTRE" | "DEPARTMENT" | "DOCTOR" | "DATETIME" | "CONFIRM" | "SUCCESS";
 
 const DEPARTMENTS = [
-  { id: "ayurveda", name: "Ayurveda", desc: "Traditional Indian holistic healing", icon: Leaf, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
-  { id: "yoga", name: "Yoga & Naturopathy", desc: "Physical & mental wellness", icon: Flower2, color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-200" },
-  { id: "unani", name: "Unani", desc: "Perso-Arabic traditional medicine", icon: Droplet, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200" },
-  { id: "siddha", name: "Siddha", desc: "Traditional South Indian healing", icon: Activity, color: "text-purple-600", bg: "bg-purple-50", border: "border-purple-200" },
-  { id: "homeopathy", name: "Homeopathy", desc: "Alternative natural remedies", icon: Stethoscope, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200" },
+  { id: "ayurveda", name: "Ayurveda", descKey: "ayurvedaDesc", icon: Leaf, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
+  { id: "yoga", name: "Yoga & Naturopathy", descKey: "yogaDesc", icon: Flower2, color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-200" },
+  { id: "unani", name: "Unani", descKey: "unaniDesc", icon: Droplet, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200" },
+  { id: "siddha", name: "Siddha", descKey: "siddhaDesc", icon: Activity, color: "text-purple-600", bg: "bg-purple-50", border: "border-purple-200" },
+  { id: "homeopathy", name: "Homeopathy", descKey: "homeopathyDesc", icon: Stethoscope, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200" },
 ];
 
 const DOCTORS = [
@@ -62,6 +63,12 @@ export default function BookAppointment() {
   const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState<any>(DATES[0]);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [language, setLanguage] = useState("en");
+
+  useEffect(() => {
+    const savedLang = localStorage.getItem("medikiosk_language");
+    if (savedLang) setLanguage(savedLang);
+  }, []);
 
   useEffect(() => {
     let filtered = ayushHospitals.slice(0, 3).map(h => ({
@@ -147,8 +154,8 @@ export default function BookAppointment() {
   const renderCentreSelection = () => (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-slate-900">Select Centre</h2>
-        <p className="text-sm text-slate-500 mt-1">Closest AYUSH centres based on your location</p>
+        <h2 className="text-2xl font-bold text-slate-900 whitespace-normal break-words">{t(language, 'selectCentre')}</h2>
+        <p className="text-sm text-slate-500 mt-1 whitespace-normal break-words">{t(language, 'closestCentres')}</p>
       </div>
 
       {isLocating ? (
@@ -175,7 +182,7 @@ export default function BookAppointment() {
                <div className="flex-1">
                  <h3 className="font-bold text-slate-900 leading-tight">{centre.name}</h3>
                  <p className="text-xs font-medium text-slate-500 mt-1 line-clamp-1">{centre.address}</p>
-                 <p className="text-xs font-bold text-emerald-600 mt-1">{centre.distance} km away</p>
+                 <p className="text-xs font-bold text-emerald-600 mt-1">{centre.distance} {t(language, 'kmAway')}</p>
                </div>
                <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0">
                  <Navigation className="w-4 h-4 text-slate-400" />
@@ -190,8 +197,8 @@ export default function BookAppointment() {
   const renderDepartmentSelection = () => (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-slate-900">Select Department</h2>
-        <p className="text-sm text-slate-500 mt-1">Which branch of AYUSH do you need at {selectedCentre?.name?.substring(0,20)}...?</p>
+        <h2 className="text-2xl font-bold text-slate-900 whitespace-normal break-words">{t(language, 'selectDepartment')}</h2>
+        <p className="text-sm text-slate-500 mt-1 whitespace-normal break-words">{t(language, 'selectDepartmentDesc')}</p>
       </div>
 
       <div className="space-y-4">
@@ -212,8 +219,8 @@ export default function BookAppointment() {
                 <Icon className={`w-7 h-7 ${dept.color}`} />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900">{dept.name}</h3>
-                <p className="text-xs text-slate-500">{dept.desc}</p>
+                <h3 className="font-bold text-slate-900 whitespace-normal break-words">{dept.name}</h3>
+                <p className="text-xs text-slate-500 whitespace-normal break-words">{t(language, dept.descKey)}</p>
               </div>
             </button>
           )
@@ -225,15 +232,15 @@ export default function BookAppointment() {
   const renderDoctorSelection = () => (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-slate-900">Select Doctor</h2>
-        <p className="text-sm text-slate-500 mt-1">Available specialists in {selectedDept?.name}</p>
+        <h2 className="text-2xl font-bold text-slate-900 whitespace-normal break-words">{t(language, 'selectDoctor')}</h2>
+        <p className="text-sm text-slate-500 mt-1 whitespace-normal break-words">{t(language, 'availableSpecialists')} {selectedDept?.name}</p>
       </div>
 
       <div className="relative mb-6">
         <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
         <input 
           type="text" 
-          placeholder="Search by name or disease..." 
+          placeholder={t(language, 'searchDoctor')} 
           className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-[#0f4b3e]"
         />
       </div>
@@ -252,7 +259,7 @@ export default function BookAppointment() {
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">{doc.degree}</p>
-              <p className="text-xs text-slate-400 mt-0.5">{doc.exp}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{doc.exp.replace('yrs exp', t(language, 'yrsExp'))}</p>
               
               <button 
                 onClick={() => {
@@ -261,7 +268,7 @@ export default function BookAppointment() {
                 }}
                 className="mt-3 w-full py-2 bg-[#0f4b3e] text-white text-xs font-bold rounded-lg hover:bg-emerald-800 transition-colors"
               >
-                Book Appointment
+                {t(language, 'bookAppointmentTitle')}
               </button>
             </div>
           </div>
@@ -421,8 +428,8 @@ export default function BookAppointment() {
           <CheckCircle2 className="w-14 h-14 text-[#0f4b3e]" />
         </div>
       </motion.div>
-      <h2 className="text-3xl font-bold mb-2">Booking Confirmed!</h2>
-      <p className="text-emerald-100/80">Your appointment has been successfully scheduled.</p>
+      <h2 className="text-3xl font-bold mb-2 whitespace-normal break-words px-4">{t(language, 'bookingConfirmed')}</h2>
+      <p className="text-emerald-100/80 whitespace-normal break-words px-4">{t(language, 'appointmentScheduled')}</p>
     </div>
   );
 
@@ -437,7 +444,7 @@ export default function BookAppointment() {
               <ChevronLeft className="w-7 h-7 text-slate-800" />
             </button>
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-bold text-slate-900 truncate">Book Appointment</h1>
+              <h1 className="text-lg font-bold text-slate-900 truncate">{t(language, 'bookAppointmentTitle')}</h1>
             </div>
             {/* Step Indicator */}
             <div className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
